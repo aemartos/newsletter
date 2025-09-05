@@ -4,13 +4,19 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import dotenv from 'dotenv';
-import { prismaClient } from './lib/prisma.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { prismaClient } from '../prisma/prisma.js';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
+
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(helmet());
@@ -37,6 +43,9 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/whatever', []);
 
+// Serve static files from React Router build
+app.use(express.static(path.join(__dirname, '../../client/build/client')));
+
 // Error handling middleware
 app.use(
   (
@@ -57,13 +66,21 @@ app.use(
   }
 );
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    error: 'Not found',
-    message: 'The requested resource was not found',
-  });
+// Serve React Router app for all non-API routes
+app.get('*', (req, res) => {
+  // Don't serve React app for API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({
+      success: false,
+      error: 'API endpoint not found',
+      message: 'The requested API endpoint was not found',
+    });
+  }
+
+  // Serve React Router app
+  return res.sendFile(
+    path.join(__dirname, '../../client/build/client/index.html')
+  );
 });
 
 // Graceful shutdown

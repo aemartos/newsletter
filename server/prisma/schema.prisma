@@ -33,15 +33,3 @@ model Post {
 
     @@map("posts")
 }
-
-model Newsletter {
-    id        String    @id @default(cuid())
-    subject   String
-    content   String
-    sent      Boolean   @default(false)
-    sentAt    DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-
-    @@map("newsletters")
-}
