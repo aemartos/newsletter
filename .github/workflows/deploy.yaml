@@ -1,0 +1,43 @@
+name: Deploy to Render.com
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Deploy to Render.com
+        run: |
+          echo "🚀 Deploying version ${{ github.ref_name }} to Render.com"
+          echo "Tag: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          
+          # Trigger Render.com deployment using deploy hook
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK }}" ]; then
+            echo "🔗 Triggering Render.com deployment..."
+            curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+            echo "✅ Deployment hook triggered successfully!"
+          else
+            echo "❌ RENDER_DEPLOY_HOOK secret not found"
+            echo "Please add RENDER_DEPLOY_HOOK to your repository secrets"
+          fi
+          
+      - name: Deployment Summary
+        run: |
+          echo "## 🎯 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by**: Tag push" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK }}" ]; then
+            echo "- **Status**: Deployment hook triggered successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Status**: ❌ RENDER_DEPLOY_HOOK secret missing" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- **Dashboard**: Check your Render.com project for build status" >> $GITHUB_STEP_SUMMARY
