@@ -11,10 +11,10 @@
     "dev": "pm2 start ecosystem.config.js",
     "dev:client": "cd client && pnpm dev",
     "dev:server": "cd server && pnpm dev",
-    "build": "pnpm -r build",
+    "build": "pnpm build:client && pnpm build:server",
     "build:client": "cd client && pnpm build",
-    "build:server": "cd server && pnpm build",
-    "start": "pm2 start ecosystem.config.js --env production",
+    "build:server": "cd server && pnpm db:generate:prod && pnpm build",
+    "start": "cd server && node dist/src/index.js",
     "stop": "pm2 stop all",
     "restart": "pm2 restart all",
     "delete": "pm2 delete all",
@@ -29,9 +29,7 @@
     "typescript": "^5.3.0"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
+    "node": ">=20.19.0"
   },
   "packageManager": "pnpm@8.15.0"
 }
-

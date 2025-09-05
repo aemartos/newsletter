@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "react-router dev",
-    "build": "react-router build",
-    "start": "react-router-serve ./build/server/index.js",
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite preview",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
@@ -14,6 +14,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@react-router/dev": "^7.8.2",
     "@react-router/node": "^7.8.2",
     "@react-router/serve": "^7.8.2",
     "@tanstack/react-query": "^5.86.0",
@@ -23,7 +24,7 @@
     "react-router": "^7.8.2"
   },
   "devDependencies": {
-    "@react-router/dev": "^7.8.2",
+    "@types/css-modules": "^1.0.0",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "@typescript-eslint/eslint-plugin": "^6.21.0",

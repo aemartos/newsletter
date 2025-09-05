@@ -58,25 +58,7 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export const Layout = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
-      </body>
-    </html>
-  );
-};
-
-const App = () => {
+export default function Root() {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -90,10 +72,20 @@ const App = () => {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Outlet />
-    </QueryClientProvider>
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <QueryClientProvider client={queryClient}>
+          <Outlet />
+        </QueryClientProvider>
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
   );
-};
-
-export default App;
+}
