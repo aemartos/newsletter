@@ -1,0 +1,37 @@
+{
+  "name": "newsletter-app",
+  "version": "1.0.0",
+  "description": "Full-stack newsletter app with React Router SSR",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "pm2 start ecosystem.config.js",
+    "dev:client": "cd client && pnpm dev",
+    "dev:server": "cd server && pnpm dev",
+    "build": "pnpm -r build",
+    "build:client": "cd client && pnpm build",
+    "build:server": "cd server && pnpm build",
+    "start": "pm2 start ecosystem.config.js --env production",
+    "stop": "pm2 stop all",
+    "restart": "pm2 restart all",
+    "delete": "pm2 delete all",
+    "logs": "pm2 logs",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
+    "type-check": "pnpm -r type-check"
+  },
+  "devDependencies": {
+    "pm2": "^5.3.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}
+

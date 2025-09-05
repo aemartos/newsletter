@@ -1,0 +1,47 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id         String   @id @default(cuid())
+    email      String   @unique
+    name       String
+    subscribed Boolean  @default(true)
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+
+    @@map("users")
+}
+
+model Post {
+    id          String    @id @default(cuid())
+    title       String
+    slug        String    @unique
+    excerpt     String?
+    content     String?
+    published   Boolean   @default(false)
+    publishedAt DateTime?
+    readTime    Int? // in minutes
+    category    String?
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    @@map("posts")
+}
+
+model Newsletter {
+    id        String    @id @default(cuid())
+    subject   String
+    content   String
+    sent      Boolean   @default(false)
+    sentAt    DateTime?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+
+    @@map("newsletters")
+}
