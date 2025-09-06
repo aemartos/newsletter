@@ -1,34 +1,45 @@
 import styles from './styles.module.css';
 
-interface InputProps {
-  type: string;
-  placeholder?: string;
-  value?: string;
-  name?: string;
-  required?: boolean;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  style?: React.CSSProperties;
+interface InputProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    'type' | 'onChange'
+  > {
+  type: React.HTMLInputTypeAttribute | 'text-area';
+  label?: string;
+  onChange?: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
 }
 
-export const Input = ({
-  type,
-  placeholder,
-  value,
-  name,
-  required,
-  onChange,
-  style,
-}: InputProps) => {
-  return (
+export const Input = ({ type, label, onChange, ...props }: InputProps) => {
+  let element = (
     <input
       className={styles.input}
       type={type}
-      placeholder={placeholder}
-      value={value}
-      name={name}
-      required={required}
       onChange={onChange}
-      style={style}
+      {...props}
     />
+  );
+  if (type === 'text-area') {
+    element = (
+      <textarea
+        className={`${styles.input} ${styles.textarea}`}
+        onChange={onChange}
+        rows={2}
+        {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+      />
+    );
+  }
+
+  return (
+    <div className={styles['input-container']}>
+      {label && (
+        <label className={styles.label} htmlFor={props.name}>
+          {label} {props.required && <span className={styles.required}>*</span>}
+        </label>
+      )}
+      {element}
+    </div>
   );
 };

@@ -31,12 +31,7 @@ export default function PostView() {
         to={Routes.HOME}
         text="←"
         kind="inverted-dark"
-        style={{
-          marginLeft: 'var(--spacing-4)',
-          marginTop: 'var(--spacing-4)',
-          width: 'fit-content',
-          padding: '0 var(--spacing-3)',
-        }}
+        className={styles['back-button']}
       />
       <Header
         title={post.title}

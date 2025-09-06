@@ -5,9 +5,10 @@ interface ButtonProps {
   type?: 'button' | 'submit' | 'reset';
   kind?: 'dark' | 'inverted' | 'inverted-dark' | 'default';
   text: string;
+  to?: string;
   disabled?: boolean;
   style?: React.CSSProperties;
-  to?: string;
+  className?: string;
   onClick?: () => void;
 }
 
@@ -15,16 +16,17 @@ export const Button = ({
   type = 'button',
   kind = 'default',
   text,
+  to,
   disabled,
   style,
-  to,
+  className = '',
   onClick,
 }: ButtonProps) => {
   if (to) {
     return (
       <Link
         to={to}
-        className={`${styles.button} ${kind ? styles[kind] : ''}`}
+        className={`${styles.button} ${kind ? styles[kind] : ''} ${className}`}
         style={style}
       >
         {text}
@@ -34,7 +36,7 @@ export const Button = ({
 
   return (
     <button
-      className={styles.button}
+      className={`${styles.button} ${className}`}
       type={type}
       disabled={disabled}
       style={style}

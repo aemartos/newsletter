@@ -159,8 +159,3 @@ select {
   border: none;
   background: none;
 }
-
-.container {
-  margin: 0 auto;
-  padding: 0 var(--spacing-4);
-}

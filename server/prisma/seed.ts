@@ -1,4 +1,4 @@
-import { prismaClient } from './prisma';
+import { prismaClient, PostStatus } from './prisma';
 
 async function main() {
   console.log('🌱 Starting database seed...');
@@ -53,7 +53,7 @@ async function main() {
           </ul>
           <p>Thank you for subscribing, and we look forward to sharing this journey with you!</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-01-15'),
         readTime: 3,
         category: 'Announcements',
@@ -82,7 +82,7 @@ async function main() {
           <pre><code>npm create react-router@latest my-app</code></pre>
           <p>This command will create a new React Router v7 project with all the necessary dependencies and configuration.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-01-20'),
         readTime: 5,
         category: 'Tutorial',
@@ -118,7 +118,7 @@ async function main() {
           <h2>Architecture Overview</h2>
           <p>The application follows a modern full-stack architecture with clear separation of concerns between the frontend and backend.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-01-25'),
         readTime: 8,
         category: 'Technical',
@@ -141,7 +141,7 @@ async function main() {
             <li>Scheduling content for future release</li>
           </ul>
         `,
-        published: false,
+        status: PostStatus.DRAFT,
         readTime: 2,
         category: 'Draft',
       },
@@ -166,7 +166,7 @@ async function main() {
           </ul>
           <p>The future is bright for web developers who stay adaptable and keep learning.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-02-01'),
         readTime: 4,
         category: 'Technology',
@@ -194,7 +194,7 @@ async function main() {
             <li>Combine both for complex designs</li>
           </ul>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-02-05'),
         readTime: 6,
         category: 'CSS',
@@ -220,7 +220,7 @@ async function main() {
           <h2>Code Organization</h2>
           <p>Keep your types close to your code and use barrel exports for clean imports.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-02-10'),
         readTime: 7,
         category: 'TypeScript',
@@ -246,7 +246,7 @@ async function main() {
           <h2>Query Optimization</h2>
           <p>Always analyze your query execution plans and optimize accordingly.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-02-15'),
         readTime: 5,
         category: 'Database',
@@ -273,7 +273,7 @@ async function main() {
           <h2>Profiling Tools</h2>
           <p>Use React DevTools Profiler to identify performance bottlenecks.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-02-20'),
         readTime: 8,
         category: 'React',
@@ -300,7 +300,7 @@ async function main() {
           <h2>Best Practices</h2>
           <p>Always include comprehensive documentation and error handling.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-02-25'),
         readTime: 6,
         category: 'API',
@@ -327,7 +327,7 @@ async function main() {
           <h2>Production Considerations</h2>
           <p>Security, resource management, and monitoring are key for production deployments.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-03-01'),
         readTime: 9,
         category: 'DevOps',
@@ -354,7 +354,7 @@ async function main() {
           <h2>Browser Support</h2>
           <p>Check browser compatibility before using new features in production.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-03-05'),
         readTime: 5,
         category: 'JavaScript',
@@ -380,7 +380,7 @@ async function main() {
           <h2>Tools and Frameworks</h2>
           <p>Choose the right tools: Jest, React Testing Library, Cypress, or Playwright.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-03-10'),
         readTime: 7,
         category: 'Testing',
@@ -407,7 +407,7 @@ async function main() {
           <h2>Best Practices</h2>
           <p>Always validate input, use HTTPS, and keep dependencies updated.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-03-15'),
         readTime: 6,
         category: 'Security',
@@ -434,7 +434,7 @@ async function main() {
           <h2>Challenges</h2>
           <p>Complexity, data consistency, and network latency are common challenges.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-03-20'),
         readTime: 8,
         category: 'Architecture',
@@ -461,7 +461,7 @@ async function main() {
           <h2>REST Advantages</h2>
           <p>Simplicity, caching, and wide adoption make REST a solid choice for many applications.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-03-25'),
         readTime: 7,
         category: 'API',
@@ -488,7 +488,7 @@ async function main() {
           <h2>Advanced Techniques</h2>
           <p>Use custom properties for theming, animations, and responsive design.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-03-30'),
         readTime: 6,
         category: 'CSS',
@@ -515,7 +515,7 @@ async function main() {
           <h2>Monitoring</h2>
           <p>Use profiling tools to identify bottlenecks and measure improvements.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-04-01'),
         readTime: 5,
         category: 'Node.js',
@@ -542,7 +542,7 @@ async function main() {
           <h2>Implementation</h2>
           <p>Use semantic HTML, proper ARIA labels, and test with screen readers.</p>
         `,
-        published: true,
+        status: PostStatus.PUBLISHED,
         publishedAt: new Date('2024-04-05'),
         readTime: 6,
         category: 'Accessibility',
@@ -568,7 +568,7 @@ async function main() {
           </ul>
           <p>This is a work in progress and will be published soon.</p>
         `,
-        published: false,
+        status: PostStatus.DRAFT,
         readTime: 10,
         category: 'Draft',
       },
@@ -593,7 +593,7 @@ async function main() {
           </ul>
           <p>This comprehensive guide is still being written and will be published soon.</p>
         `,
-        published: false,
+        status: PostStatus.DRAFT,
         readTime: 12,
         category: 'Draft',
       },

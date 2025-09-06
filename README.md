@@ -7,44 +7,76 @@ A full-stack newsletter application built with React Router SSR, TypeScript, Exp
 ### 📁 Project Structure
 
 #### Client (`/client`)
-- **React Router v7** with SSR
+- **React Router v7** with Server-Side Rendering (SSR)
 - **TypeScript** for type safety
+- **TipTap** rich text editor for post creation
+- **TanStack Query** for infinity scroll
+- **CSS Modules** for component-scoped styling
+- **Vite** for fast development and building
 
 #### Server (`/server`)
 - **Express.js** REST API
-- **Prisma ORM** for database operations
+- **Prisma ORM** for database operations and migrations
+- **SendGrid** for email notifications
 - **TypeScript** for type safety
+- **PostgreSQL** database with connection pooling
 
 ```
 newsletter/
-├── client/                # React Router SSR client
+├── client/                    # React Router SSR client
 │   ├── app/
-│   │   ├── routes/        # Route components
-│   │   ├── root.tsx       # Root layout
-│   │   └── root.css       # Global styles
-│   ├── public/            # Static assets
+│   │   ├── components/        # Reusable UI components
+│   │   │   ├── Alert/         # Alert notifications
+│   │   │   ├── Button/        # Button component
+│   │   │   ├── Card/          # Post card component
+│   │   │   ├── Header/        # Page header
+│   │   │   ├── Input/         # Form inputs
+│   │   │   ├── Layout/        # Layout wrapper
+│   │   │   ├── Menu/          # Navigation menu
+│   │   │   ├── Spinner/       # Loading spinner
+│   │   │   └── TextEditor/    # TipTap rich text editor
+│   │   ├── config/            # App configuration
+│   │   ├── hooks/             # Custom React hooks
+│   │   ├── lib/               # Utilities and API client
+│   │   ├── routes/            # Route components
+│   │   │   ├── index.tsx      # Home page with infinite scroll
+│   │   │   ├── new-post.tsx   # Post creation form
+│   │   │   ├── post.$slug.tsx # Individual post view
+│   │   │   └── subscribe.tsx  # Newsletter subscription
+│   │   ├── utils/             # Helper functions
+│   │   ├── root.tsx           # Root layout component
+│   │   └── root.css           # Global styles
+│   ├── public/                # Static assets
+│   │   ├── favicon/           # Favicon files
+│   │   └── images/            # Image assets
+│   ├── react-router.config.ts # React Router configuration
+│   ├── vite.config.ts         # Vite build configuration
 │   └── package.json
-├── server/                # Express.js API server
+├── server/                    # Express.js API server
 │   ├── src/
-│   │   ├── routes/        # API routes
-│   │   ├── lib/           # Utilities
-│   │   ├── types/         # TypeScript types
-│   │   └── index.ts       # Server entry point
+│   │   ├── config/            # Server configuration
+│   │   ├── providers/         # External service providers (SendGrid)
+│   │   ├── routes/            # API route handlers
+│   │   │   ├── posts.ts       # Post CRUD operations
+│   │   │   └── subscribers.ts # Subscriber management
+│   │   └── index.ts           # Server entry point
 │   ├── prisma/
-│   │   ├── schema.prisma     # Database schema
-│   │   ├── prisma.ts         # Prisma client setup
-│   │   └── seed.ts           # Database seeding
+│   │   ├── schema.prisma      # Database schema
+│   │   ├── prisma.ts          # Prisma client setup
+│   │   └── seed.ts            # Database seeding
 │   └── package.json
-├── ecosystem.config.js    # PM2 configuration (development)
-└── package.json           # Root package.json
+├── Dockerfile                 # Multi-stage Docker build
+├── ecosystem.config.js        # PM2 configuration for development
+├── pnpm-workspace.yaml        # PNPM workspace configuration
+└── package.json               # Root package.json with workspace scripts
 ```
 
 ## 📋 Prerequisites
 
-- **Node.js** (v18 or higher)
-- **pnpm** (v8 or higher)
+- **Node.js** (v20.19.0 or higher)
+- **pnpm** (v8.15.0 or higher)
 - **PostgreSQL** (v12 or higher)
-- **PM2** (installed globally)
+- **PM2** (installed globally, v5.3.0+)
 
 ## 🛠️ Installation
 
@@ -145,7 +177,7 @@ pnpm db:seed
 ### Database Schema
 
 The application uses the following main entities:
-- **Users**: Newsletter subscribers
+- **Subscribers**: Newsletter subscribers
 - **Posts**: Blog posts and content
 
 ## 🔧 API Endpoints
@@ -156,7 +188,7 @@ The application uses the following main entities:
 ### Posts
 - `GET /api/posts` - Get posts by filter (paginated)
 - `GET /api/posts/:slug` - Get post by slug
-- `POST /api/posts` - Create post
+- `POST /api/posts` - Create post (w/ ability to schedule)
 
 ## 🧪 Code Quality
 
@@ -175,6 +207,14 @@ pnpm lint:fix
 pnpm type-check
 ```
 
+### Code Formatting
+```bash
+# Format code with Prettier
+pnpm format
+
+# Check formatting
+pnpm format:check
+```
 ## 🚀 Deployment
 
 ### Production Deployment (Render.com)
@@ -185,17 +225,22 @@ pnpm type-check
    ```
 The GitHub Action will automatically trigger a deployment to Render.com.
 
-### Local Docker Build & Run
+### Docker Deployment
+
+The application includes a multi-stage Dockerfile optimized for production:
 
 1. **Build the Docker image**:
    ```bash
    docker build -t newsletter-app .
    ```
 
-2. **Run the container**:
+2. **Run the container with environment variables**:
    ```bash
    docker run -p 3000:3000 \
-     -e DATABASE_URL="your-postgresql-connection-string" \
+     -e DATABASE_URL="postgresql://user:password@host:port/database" \
+     -e SENDGRID_API_KEY="your-sendgrid-api-key" \
+     -e EMAIL_TEMPLATE_ID="your-sendgrid-template-id" \
+     -e CLIENT_URL="https://your-domain.com" \
      -e NODE_ENV=production \
      newsletter-app
    ```
@@ -203,6 +248,7 @@ The GitHub Action will automatically trigger a deployment to Render.com.
 3. **Access the application**:
    - Frontend: http://localhost:3000
    - API: http://localhost:3000/api
+   - Health Check: http://localhost:3000/health
 
 ### Local Development Build
 

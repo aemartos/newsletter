@@ -23,7 +23,7 @@ router.post('/', async (req, res) => {
       data: { email },
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: {
         id: subscriber.id,

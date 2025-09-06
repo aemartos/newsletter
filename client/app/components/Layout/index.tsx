@@ -14,7 +14,7 @@ export const Layout = ({
 }: LayoutProps) => {
   return (
     <div
-      className={`${styles.container} ${centered ? styles.centered : ''} ${showMenu ? styles.showMenu : ''}`}
+      className={`${styles['main-wrapper']} ${centered ? styles.centered : ''} ${showMenu ? styles.showMenu : ''}`}
     >
       {showMenu && (
         <Menu

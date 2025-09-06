@@ -2,12 +2,12 @@ import { useLoaderData } from 'react-router';
 import { useEffect } from 'react';
 import { Header, Card, Button, Spinner } from '../components';
 import { useInfinitePosts } from '../hooks/usePosts';
-import { fetchPosts, GetPostsParams, Routes } from '../lib';
+import { fetchPosts, GetPostsParams, Routes, PostStatus } from '../lib';
 import styles from './styles.module.css';
 
 const filters: GetPostsParams = {
   limit: 8,
-  published: true,
+  status: PostStatus.PUBLISHED,
   sortBy: 'publishedAt',
   sortOrder: 'desc',
 };
@@ -49,7 +49,6 @@ const Index = () => {
 
   const allPosts = [...initialPosts, ...infinitePosts];
 
-  // Infinite scroll effect
   useEffect(() => {
     const handleScroll = () => {
       if (!hasNextPage || isFetchingNextPage) return;

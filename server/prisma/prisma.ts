@@ -1,5 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Subscriber, PostStatus } from '@prisma/client';
 import { withAccelerate } from '@prisma/extension-accelerate';
+import { config } from '../src/config/index.js';
 
 const globalForPrisma = globalThis as unknown as {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -10,8 +11,9 @@ const prisma = new PrismaClient().$extends(withAccelerate());
 
 export const prismaClient = globalForPrisma.prisma ?? prisma;
 
-if (process.env.NODE_ENV !== 'production') {
+if (config.nodeEnv !== 'production') {
   globalForPrisma.prisma = prismaClient;
 }
 
-export default prismaClient;
+export type { Subscriber };
+export { PostStatus };

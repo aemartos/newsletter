@@ -1,7 +1,18 @@
 .container {
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
+.back-button {
+  position: fixed;
+  top: var(--spacing-4);
+  left: var(--spacing-4);
+  width: fit-content;
+  padding: 0 var(--spacing-3);
+}
+
+/* HOME PAGE */
 .posts {
   padding: var(--spacing-8);
   .posts-header {
@@ -29,13 +40,13 @@
   .posts-list > *:nth-child(2):nth-last-child(1) {
     grid-column: span 1;
   }
-
   .error {
     text-align: center;
     padding: var(--spacing-4);
   }
 }
 
+/* SUBSCRIBE PAGE */
 .newsletter-image {
   width: 16em;
   height: auto;
@@ -51,8 +62,39 @@
   margin-bottom: var(--spacing-6);
 }
 
+/* NEW POST PAGE */
+.post-form {
+  display: flex;
+  flex-direction: column;
+  margin: var(--spacing-6);
+  gap: var(--spacing-4);
+  flex-grow: 1;
+  .post-form-data {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+    justify-content: space-between;
+    .title-row {
+      display: flex;
+      flex-direction: row;
+      gap: var(--spacing-4);
+      > * {
+        width: 33%;
+      }
+      @media (max-width: 768px) {
+        flex-direction: column;
+        > * {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+/* POST DETAIL PAGE */
 .post {
   max-width: 800px;
+  min-width: 800px;
   margin: 0 auto;
   padding: var(--spacing-8);
 }
@@ -89,7 +131,6 @@
     font-family: var(--font-family);
     color: var(--color-background);
   }
-
   .post-content {
     line-height: 1.7;
     font-size: 1.1rem;

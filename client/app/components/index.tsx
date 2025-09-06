@@ -7,3 +7,4 @@ export { Menu } from './Menu';
 export { Card } from './Card';
 export { Spinner } from './Spinner';
 export { Alert } from './Alert';
+export { TextEditor } from './TextEditor';

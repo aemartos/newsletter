@@ -1,14 +1,24 @@
 /// <reference types="vite/client" />
+import { clientConfig } from '../config/index.js';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE_URL = clientConfig.api.baseUrl;
+
+export const PostStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  DELETED: 'DELETED',
+} as const;
+
+export type PostStatusType = (typeof PostStatus)[keyof typeof PostStatus];
 
 export interface Post {
   id: string;
   title: string;
   slug: string;
+  schedule: string | null;
   excerpt: string | null;
   content: string | null;
+  status: PostStatusType;
   publishedAt: string | null;
   readTime: number | null;
   category: string | null;
@@ -28,7 +38,7 @@ export interface PostsResponse {
 
 export interface GetPostsParams {
   limit?: number;
-  published?: boolean;
+  status?: PostStatusType;
   cursor?: string | null;
   sortBy?: 'publishedAt' | 'createdAt' | 'title' | 'readTime';
   sortOrder?: 'asc' | 'desc';
@@ -79,6 +89,27 @@ export const fetchPost = async (slug: string): Promise<Post> => {
   } catch (error) {
     throw new Error(
       `Failed to fetch post: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+};
+
+export const createPost = async (post: Partial<Post>): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/posts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(post),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create post');
+    }
+    return response.json();
+  } catch (error) {
+    throw new Error(
+      `Failed to create post: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 };

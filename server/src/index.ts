@@ -3,28 +3,26 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
-import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequestHandler } from '@react-router/express';
 import { prismaClient } from '../prisma/prisma.js';
 import postsRouter from './routes/posts.js';
 import subscribersRouter from './routes/subscribers.js';
-
-dotenv.config();
+import { config } from './config/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.port;
 
 app.use(helmet());
 app.use(compression());
 app.use(morgan('combined'));
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: config.clientUrl,
     credentials: true,
   })
 );
@@ -55,23 +53,21 @@ app.use(
       success: false,
       error: 'Internal server error',
       message:
-        process.env.NODE_ENV === 'development'
-          ? err.message
-          : 'Something went wrong',
+        config.nodeEnv === 'development' ? err.message : 'Something went wrong',
     });
   }
 );
 
 // Create React Router request handler for SSR
-const buildPath = path.join(__dirname, '../../client/build');
+const buildPath = path.join(__dirname, '../../../client/build');
 const requestHandler = createRequestHandler({
-  build: () => import(`${buildPath}/server/index.js`),
-  mode: process.env.NODE_ENV || 'production',
+  build: () => import(`${buildPath}/index.js`),
+  mode: config.nodeEnv,
 });
 
 // Serve static assets
 app.use(
-  express.static(path.join(buildPath, 'client'), {
+  express.static(buildPath, {
     index: false, // Don't serve index.html for static assets
   })
 );
@@ -90,12 +86,14 @@ app.all('*', (req, res, next) => {
   return requestHandler(req, res, next);
 });
 
+// Handles Ctrl+C to stop the server
 process.on('SIGINT', async () => {
   console.log('Shutting down gracefully...');
   await prismaClient.$disconnect();
   process.exit(0);
 });
 
+// Handles when PM2 sends a termination signal
 process.on('SIGTERM', async () => {
   console.log('Shutting down gracefully...');
   await prismaClient.$disconnect();

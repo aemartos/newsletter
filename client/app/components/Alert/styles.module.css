@@ -1,6 +1,8 @@
 .alert {
   position: absolute;
   top: 2em;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
   margin-bottom: var(--spacing-4);
   padding: var(--spacing-4) var(--spacing-8);
