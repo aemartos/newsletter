@@ -1,3 +1,6 @@
+import { Link } from 'react-router';
+import { formatDate } from '../../utils';
+import { Routes } from '../../lib';
 import styles from './styles.module.css';
 
 interface CardProps {
@@ -14,19 +17,15 @@ interface CardProps {
   style?: React.CSSProperties;
 }
 
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = date.toLocaleDateString('en-US', { month: 'short' });
-  const year = date.getFullYear().toString().slice(-2);
-  return `${day} ${month} ${year}`;
-};
-
 export const Card = ({ post, style }: CardProps) => {
   const displayDate = post.publishedAt || post.createdAt;
 
   return (
-    <div className={styles.card} style={style}>
+    <Link
+      to={Routes.POSTS_VIEW.replace(':slug', post.slug)}
+      className={styles.card}
+      style={style}
+    >
       <div className={styles['card-header']}>
         <span className={styles.date}>{formatDate(displayDate)}</span>
         {post.category && (
@@ -40,6 +39,6 @@ export const Card = ({ post, style }: CardProps) => {
           <span className={styles['read-time']}>{post.readTime} min read</span>
         )}
       </div>
-    </div>
+    </Link>
   );
 };

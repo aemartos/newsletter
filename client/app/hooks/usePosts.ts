@@ -1,15 +1,7 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { fetchPost, fetchPosts, type GetPostsParams } from '../lib';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { fetchPosts, type GetPostsParams } from '../lib';
 
 const STALE_TIME = 1000 * 60 * 5; // 5 minutes
-
-export const usePost = (slug: string) => {
-  return useQuery({
-    queryKey: ['post', slug],
-    queryFn: () => fetchPost(slug),
-    staleTime: STALE_TIME,
-  });
-};
 
 export const useInfinitePosts = (params: GetPostsParams = {}) => {
   return useInfiniteQuery({

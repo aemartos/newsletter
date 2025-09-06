@@ -8,6 +8,7 @@ export interface Post {
   title: string;
   slug: string;
   excerpt: string | null;
+  content: string | null;
   publishedAt: string | null;
   readTime: number | null;
   category: string | null;
@@ -65,9 +66,16 @@ export const fetchPost = async (slug: string): Promise<Post> => {
   try {
     const response = await fetch(`${API_BASE_URL}/posts/${slug}`);
     if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Post not found');
+      }
       throw new Error(`Failed to fetch post: ${response.statusText}`);
     }
-    return response.json();
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to fetch post');
+    }
+    return result.data;
   } catch (error) {
     throw new Error(
       `Failed to fetch post: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -75,7 +83,7 @@ export const fetchPost = async (slug: string): Promise<Post> => {
   }
 };
 
-export const createSubscriber = async (email: string): Promise<any> => {
+export const createSubscriber = async (email: string): Promise<void> => {
   try {
     const response = await fetch(`${API_BASE_URL}/subscribers`, {
       method: 'POST',

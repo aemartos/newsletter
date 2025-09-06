@@ -4,4 +4,5 @@ export default [
   index('routes/index.tsx'),
   route('/subscribe', 'routes/subscribe.tsx'),
   route('/post/new', 'routes/new-post.tsx'),
+  route('/post/:slug', 'routes/post.$slug.tsx'),
 ] satisfies RouteConfig;

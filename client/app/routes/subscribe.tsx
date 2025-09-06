@@ -7,13 +7,11 @@ import styles from './styles.module.css';
 export const action = async ({ request }: { request: Request }) => {
   const formData = await request.formData();
   const email = formData.get('email') as string;
-
   try {
-    const result = await createSubscriber(email);
-
+    await createSubscriber(email);
     return {
       success: true,
-      message: result.message || 'Successfully subscribed to our newsletter!',
+      message: 'Successfully subscribed to our newsletter!',
     };
   } catch (error) {
     return {

@@ -19,12 +19,17 @@ type Pages = {
   "/post/new": {
     params: {};
   };
+  "/post/:slug": {
+    params: {
+      "slug": string;
+    };
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/subscribe" | "/post/new";
+    page: "/" | "/subscribe" | "/post/new" | "/post/:slug";
   };
   "routes/index.tsx": {
     id: "routes/index";
@@ -37,5 +42,9 @@ type RouteFiles = {
   "routes/new-post.tsx": {
     id: "routes/new-post";
     page: "/post/new";
+  };
+  "routes/post.$slug.tsx": {
+    id: "routes/post.$slug";
+    page: "/post/:slug";
   };
 };
