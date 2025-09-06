@@ -1,0 +1,19 @@
+.menu {
+  height: 4em;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--spacing-4);
+  background-color: var(--color-primary);
+  padding: var(--spacing-2) var(--spacing-4);
+}
+
+.menu a {
+  color: var(--color-background);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  &:hover {
+    color: var(--color-background);
+  }
+}

@@ -1,8 +1,16 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
+import {
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useLocation,
+} from 'react-router';
 import type { LinksFunction } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import { Layout } from './components';
 import './root.css';
 
 export const links: LinksFunction = () => [
@@ -15,6 +23,10 @@ export const links: LinksFunction = () => [
   {
     rel: 'stylesheet',
     href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
+  },
+  {
+    rel: 'stylesheet',
+    href: 'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap',
   },
   // Favicon with light/dark mode support
   { rel: 'icon', href: '/favicon/light/favicon.ico', sizes: 'any' },
@@ -58,6 +70,22 @@ export const links: LinksFunction = () => [
   },
 ];
 
+function App() {
+  const location = useLocation();
+
+  const menuRoutes = [''];
+  const showMenu = menuRoutes.includes(location.pathname);
+
+  const centeredRoutes = ['/subscribe'];
+  const centered = centeredRoutes.includes(location.pathname);
+
+  return (
+    <Layout showMenu={showMenu} centered={centered}>
+      <Outlet />
+    </Layout>
+  );
+}
+
 export default function Root() {
   const [queryClient] = useState(
     () =>
@@ -81,7 +109,7 @@ export default function Root() {
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
-          <Outlet />
+          <App />
         </QueryClientProvider>
         <ScrollRestoration />
         <Scripts />

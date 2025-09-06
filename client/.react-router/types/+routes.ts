@@ -13,15 +13,29 @@ type Pages = {
   "/": {
     params: {};
   };
+  "/subscribe": {
+    params: {};
+  };
+  "/post/new": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
+    page: "/" | "/subscribe" | "/post/new";
+  };
+  "routes/index.tsx": {
+    id: "routes/index";
     page: "/";
   };
-  "routes/_index.tsx": {
-    id: "routes/_index";
-    page: "/";
+  "routes/subscribe.tsx": {
+    id: "routes/subscribe";
+    page: "/subscribe";
+  };
+  "routes/new-post.tsx": {
+    id: "routes/new-post";
+    page: "/post/new";
   };
 };

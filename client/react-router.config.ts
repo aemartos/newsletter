@@ -5,6 +5,6 @@ export default {
   serverModuleFormat: 'esm',
   serverBuildFile: 'index.js',
   async prerender() {
-    return ['_index'];
+    return ['/', '/post/new', '/subscribe'];
   },
 } satisfies Config;

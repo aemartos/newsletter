@@ -154,8 +154,8 @@ The application uses the following main entities:
 - `POST /api/subscribers` - Create a new user (subscribe)
 
 ### Posts
-- `GET /api/posts` - Get published posts
-- `GET /api/posts/:id` - Get post by ID
+- `GET /api/posts` - Get posts by filter (paginated)
+- `GET /api/posts/:slug` - Get post by slug
 - `POST /api/posts` - Create post
 
 ## 🧪 Code Quality
@@ -220,16 +220,6 @@ The GitHub Action will automatically trigger a deployment to Render.com.
    ```bash
    pnpm build:server
    ```
-
-### Manual Database Setup
-
-Before running the application, ensure your database is set up:
-
-```bash
-# Connect to your database and run:
-pnpm db:push    # Apply schema migrations
-pnpm db:seed    # Optional: populate with sample data
-```
 
 ## 📄 License
 

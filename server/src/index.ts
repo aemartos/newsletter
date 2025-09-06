@@ -8,8 +8,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequestHandler } from '@react-router/express';
 import { prismaClient } from '../prisma/prisma.js';
+import postsRouter from './routes/posts.js';
 
-// Load environment variables
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,7 +18,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(helmet());
 app.use(compression());
 app.use(morgan('combined'));
@@ -31,7 +30,6 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -40,10 +38,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes
-app.use('/api/test', express.Router());
+app.use('/api/posts', postsRouter);
 
-// Error handling middleware
+// TODO: improve error handling middleware
 app.use(
   (
     err: Error,
@@ -91,7 +88,6 @@ app.all('*', (req, res, next) => {
   return requestHandler(req, res, next);
 });
 
-// Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('Shutting down gracefully...');
   await prismaClient.$disconnect();
