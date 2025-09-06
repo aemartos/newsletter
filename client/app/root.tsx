@@ -5,13 +5,16 @@ import {
   Scripts,
   ScrollRestoration,
   useLocation,
+  isRouteErrorResponse,
+  type ErrorResponse,
 } from 'react-router';
 import type { LinksFunction } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { Layout } from './components';
+import { GenericError, Layout } from './components';
 import './root.css';
+import { Routes } from './lib';
 
 export const links: LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -70,6 +73,24 @@ export const links: LinksFunction = () => [
   },
 ];
 
+const ViewportLayout = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
+};
+
 function App() {
   const location = useLocation();
 
@@ -100,20 +121,24 @@ export default function Root() {
   );
 
   return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        <QueryClientProvider client={queryClient}>
-          <App />
-        </QueryClientProvider>
-        <ScrollRestoration />
-        <Scripts />
-      </body>
-    </html>
+    <ViewportLayout>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </ViewportLayout>
+  );
+}
+
+export function ErrorBoundary({ error }: { error: ErrorResponse }) {
+  const errorTitle = isRouteErrorResponse(error)
+    ? `${error.status} ${error.statusText}`
+    : 'There was an error';
+
+  return (
+    <ViewportLayout>
+      <Layout showMenu={false} centered={true}>
+        <GenericError title={errorTitle} to={Routes.HOME} />
+      </Layout>
+    </ViewportLayout>
   );
 }

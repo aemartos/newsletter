@@ -1,8 +1,9 @@
 import { type RouteConfig, index, route } from '@react-router/dev/routes';
+import { Routes } from './lib';
 
 export default [
   index('routes/index.tsx'),
-  route('/subscribe', 'routes/subscribe.tsx'),
-  route('/post/new', 'routes/new-post.tsx'),
-  route('/post/:slug', 'routes/post.$slug.tsx'),
+  route(Routes.SUBSCRIBE, 'routes/subscribe.tsx'),
+  route(Routes.POSTS_NEW, 'routes/new-post.tsx'),
+  route(Routes.POSTS_VIEW, 'routes/post.$slug.tsx'),
 ] satisfies RouteConfig;

@@ -1,3 +1,4 @@
+export { GenericError } from './GenericError';
 export { Header } from './Header';
 export { Layout } from './Layout';
 export { Input } from './Input';

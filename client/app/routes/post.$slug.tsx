@@ -1,6 +1,6 @@
 import { useLoaderData } from 'react-router';
 import { fetchPost, Routes } from '../lib';
-import { Header, Button } from '../components';
+import { Header, Button, GenericError } from '../components';
 import styles from './styles.module.css';
 import { formatDate } from '../utils';
 
@@ -18,16 +18,10 @@ export default function PostView() {
 
   if (error || !post) {
     return (
-      <div className={styles.container}>
-        <Header title="Post Not Found" />
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <h2>Post not found</h2>
-          <p>
-            The post you&apos;re looking for doesn&apos;t exist or has been
-            removed.
-          </p>
-        </div>
-      </div>
+      <GenericError
+        title="Post not found"
+        description="The post you're looking for doesn't exist or has been removed."
+      />
     );
   }
 
