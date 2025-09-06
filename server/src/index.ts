@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import { createRequestHandler } from '@react-router/express';
 import { prismaClient } from '../prisma/prisma.js';
 import postsRouter from './routes/posts.js';
+import subscribersRouter from './routes/subscribers.js';
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/posts', postsRouter);
+app.use('/api/subscribers', subscribersRouter);
 
 // TODO: improve error handling middleware
 app.use(

@@ -74,3 +74,27 @@ export const fetchPost = async (slug: string): Promise<Post> => {
     );
   }
 };
+
+export const createSubscriber = async (email: string): Promise<any> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/subscribers`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message ||
+          `Failed to create subscriber: ${response.statusText}`
+      );
+    }
+    return response.json();
+  } catch (error) {
+    throw new Error(
+      `Failed to create subscriber: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+};

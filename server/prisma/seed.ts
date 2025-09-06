@@ -3,40 +3,35 @@ import { prismaClient } from './prisma';
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Create sample users
-  const users = await Promise.all([
-    prismaClient.user.upsert({
+  const subscribers = await Promise.all([
+    prismaClient.subscriber.upsert({
       where: { email: 'john@example.com' },
       update: {},
       create: {
         email: 'john@example.com',
-        name: 'John Doe',
         subscribed: true,
       },
     }),
-    prismaClient.user.upsert({
+    prismaClient.subscriber.upsert({
       where: { email: 'jane@example.com' },
       update: {},
       create: {
         email: 'jane@example.com',
-        name: 'Jane Smith',
         subscribed: true,
       },
     }),
-    prismaClient.user.upsert({
+    prismaClient.subscriber.upsert({
       where: { email: 'bob@example.com' },
       update: {},
       create: {
         email: 'bob@example.com',
-        name: 'Bob Johnson',
         subscribed: false,
       },
     }),
   ]);
 
-  console.log(`✅ Created ${users.length} users`);
+  console.log(`✅ Created ${subscribers.length} subscribers`);
 
-  // Create sample posts
   const posts = await Promise.all([
     prismaClient.post.upsert({
       where: { slug: 'welcome-to-our-newsletter' },

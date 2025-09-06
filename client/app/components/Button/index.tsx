@@ -5,6 +5,7 @@ interface ButtonProps {
   type?: 'button' | 'submit' | 'reset';
   kind?: 'dark' | 'inverted' | 'inverted-dark' | 'default';
   text: string;
+  disabled?: boolean;
   style?: React.CSSProperties;
   to?: string;
   onClick?: () => void;
@@ -14,6 +15,7 @@ export const Button = ({
   type = 'button',
   kind = 'default',
   text,
+  disabled,
   style,
   to,
   onClick,
@@ -34,6 +36,7 @@ export const Button = ({
     <button
       className={styles.button}
       type={type}
+      disabled={disabled}
       style={style}
       onClick={onClick}
     >
