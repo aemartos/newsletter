@@ -1,11 +1,7 @@
 import express from 'express';
-import {
-  prismaClient,
-  type Subscriber,
-  PostStatus,
-} from '../../prisma/prisma.js';
-import { sendEmail } from '../providers/email.js';
-import { config } from '../config/index.js';
+import { prismaClient, PostStatus } from '../../prisma';
+import { Queues, jobProcessor } from '../lib/jobs';
+import { PUBLISH_RETRY } from '../workers/consts';
 
 const router: express.Router = express.Router();
 
@@ -120,7 +116,6 @@ router.post('/', async (req, res) => {
     const existingPost = await prismaClient.post.findUnique({
       where: { slug },
     });
-
     if (existingPost) {
       return res.status(400).json({
         success: false,
@@ -128,8 +123,9 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const scheduleDate = schedule ? new Date(schedule).toISOString() : null;
-    const publishedAtDate = scheduleDate ? null : new Date().toISOString();
+    const now = Date.now();
+    const scheduleDate = schedule ? new Date(schedule) : null;
+    const isFuture = !!(scheduleDate && scheduleDate.getTime() > now);
 
     const post = await prismaClient.post.create({
       data: {
@@ -138,38 +134,40 @@ router.post('/', async (req, res) => {
         schedule: scheduleDate,
         excerpt,
         content,
-        status: !scheduleDate ? PostStatus.PUBLISHED : PostStatus.DRAFT, // Only publish immediately if no schedule
-        publishedAt: publishedAtDate,
+        status: isFuture ? PostStatus.DRAFT : PostStatus.PUBLISHED,
+        publishedAt: isFuture ? null : new Date(),
         readTime,
         category,
       },
     });
 
-    const subscribers = await prismaClient.subscriber.findMany({
-      where: {
-        subscribed: true,
-      },
-    });
-
-    const emailPromises = subscribers.map((subscriber: Subscriber) =>
-      sendEmail({
-        email: subscriber.email,
-        templateId: config.email.templateId,
-        dynamic_template_data: {
-          post_url: `${config.clientUrl}/post/${slug}`,
+    if (isFuture) {
+      await jobProcessor.sendAfter(
+        Queues.NEWSLETTER.PUBLISH_POST,
+        { slug: post.slug },
+        {
+          ...PUBLISH_RETRY,
+          singletonKey: `publish:${post.id}:${scheduleDate.toISOString()}`, // de-dupe
         },
-      }).catch(error => {
-        console.error(`Failed to send email to ${subscriber.email}:`, error);
-      })
-    );
-
-    await Promise.allSettled(emailPromises);
+        scheduleDate
+      );
+    } else {
+      await jobProcessor.send(
+        Queues.NEWSLETTER.PUBLISH_POST,
+        { slug: post.slug },
+        {
+          ...PUBLISH_RETRY,
+          singletonKey: `publish:${post.id}:${now}`,
+        }
+      );
+    }
 
     return res.json({ success: true, data: post });
   } catch (error) {
-    throw new Error(
-      `Failed to create post: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
+    return res.status(500).json({
+      success: false,
+      message: `Failed to create post: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    });
   }
 });
 

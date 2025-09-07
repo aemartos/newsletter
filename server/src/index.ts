@@ -6,10 +6,12 @@ import compression from 'compression';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequestHandler } from '@react-router/express';
-import { prismaClient } from '../prisma/prisma.js';
-import postsRouter from './routes/posts.js';
-import subscribersRouter from './routes/subscribers.js';
-import { config } from './config/index.js';
+import { prismaClient } from '../prisma';
+import { startJobProcessor, stopJobProcessor } from './lib/jobs';
+import { registerWorkers } from './workers';
+import { config } from './config';
+import postsRouter from './routes/posts';
+import subscribersRouter from './routes/subscribers';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -89,6 +91,7 @@ app.all('*', (req, res, next) => {
 // Handles Ctrl+C to stop the server
 process.on('SIGINT', async () => {
   console.log('Shutting down gracefully...');
+  await stopJobProcessor();
   await prismaClient.$disconnect();
   process.exit(0);
 });
@@ -96,12 +99,22 @@ process.on('SIGINT', async () => {
 // Handles when PM2 sends a termination signal
 process.on('SIGTERM', async () => {
   console.log('Shutting down gracefully...');
+  await stopJobProcessor();
   await prismaClient.$disconnect();
   process.exit(0);
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
-});
+startJobProcessor()
+  .then(registerWorkers)
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📊 Health check: http://localhost:${PORT}/health`);
+      console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
+      console.log(`[pg-boss] ready`);
+    });
+  })
+  .catch(e => {
+    console.error('pg-boss failed to start', e);
+    process.exit(1);
+  });

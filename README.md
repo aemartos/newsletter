@@ -177,8 +177,9 @@ pnpm db:seed
 ### Database Schema
 
 The application uses the following main entities:
-- **Subscribers**: Newsletter subscribers
-- **Posts**: Blog posts and content
+- **Subscribers**: newsletter subscribers
+- **Posts**: posts and content
+- **EmailDeliveries**: history of emails sent
 
 ## 🔧 API Endpoints
 
@@ -215,57 +216,6 @@ pnpm format
 # Check formatting
 pnpm format:check
 ```
-## 🚀 Deployment
-
-### Production Deployment (Render.com)
-**Deploy by pushing a tag**:
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
-The GitHub Action will automatically trigger a deployment to Render.com.
-
-### Docker Deployment
-
-The application includes a multi-stage Dockerfile optimized for production:
-
-1. **Build the Docker image**:
-   ```bash
-   docker build -t newsletter-app .
-   ```
-
-2. **Run the container with environment variables**:
-   ```bash
-   docker run -p 3000:3000 \
-     -e DATABASE_URL="postgresql://user:password@host:port/database" \
-     -e SENDGRID_API_KEY="your-sendgrid-api-key" \
-     -e EMAIL_TEMPLATE_ID="your-sendgrid-template-id" \
-     -e CLIENT_URL="https://your-domain.com" \
-     -e NODE_ENV=production \
-     newsletter-app
-   ```
-
-3. **Access the application**:
-   - Frontend: http://localhost:3000
-   - API: http://localhost:3000/api
-   - Health Check: http://localhost:3000/health
-
-### Local Development Build
-
-1. **Build both client and server**:
-   ```bash
-   pnpm build
-   ```
-
-2. **Build only client**:
-   ```bash
-   pnpm build:client
-   ```
-
-3. **Build only server**:
-   ```bash
-   pnpm build:server
-   ```
 
 ## 📄 License
 
@@ -276,3 +226,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [React Router](https://reactrouter.com/) for the SSR framework
 - [Prisma](https://www.prisma.io/) for the database ORM
 - [Express.js](https://expressjs.com/) for the backend framework
+
+## [TODO] Rationale
+- What were some of the reasons you chose the technology stack that you did?
+- What were some of the trade-offs you made when building this application. Why were these acceptable trade-offs?
+- Given more time, what improvements or optimizations would you want to add? When would you add them?
+- How would you deploy the application in a production-ready way?

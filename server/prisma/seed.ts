@@ -1,4 +1,4 @@
-import { prismaClient, PostStatus } from './prisma';
+import { prismaClient, PostStatus } from '.';
 
 async function main() {
   console.log('🌱 Starting database seed...');

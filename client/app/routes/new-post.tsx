@@ -17,12 +17,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     await createPost({
       title,
       slug,
-      schedule,
+      // TODO: Ensure schedule is in ISO string format
+      schedule: schedule ? new Date(schedule).toISOString() : undefined,
       excerpt,
       content,
     });
 
-    return redirect(`${Routes.POSTS_VIEW.replace(':slug', slug)}`);
+    if (schedule) {
+      return redirect(`${Routes.HOME}`);
+    } else {
+      return redirect(`${Routes.POSTS_VIEW.replace(':slug', slug)}`);
+    }
   } catch (error) {
     return {
       success: false,
