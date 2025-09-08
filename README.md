@@ -7,6 +7,7 @@ A full-stack newsletter application built with React Router SSR, TypeScript, Exp
 ### 📁 Project Structure
 
 #### Client (`/client`)
+
 - **React Router v7** with Server-Side Rendering (SSR)
 - **TypeScript** for type safety
 - **TipTap** rich text editor for post creation
@@ -15,26 +16,19 @@ A full-stack newsletter application built with React Router SSR, TypeScript, Exp
 - **Vite** for fast development and building
 
 #### Server (`/server`)
+
 - **Express.js** REST API
 - **Prisma ORM** for database operations and migrations
 - **SendGrid** for email notifications
 - **TypeScript** for type safety
 - **PostgreSQL** database with connection pooling
+- **PgBoss** job queue system for background processing
 
-```
+```bash
 newsletter/
 ├── client/                    # React Router SSR client
 │   ├── app/
 │   │   ├── components/        # Reusable UI components
-│   │   │   ├── Alert/         # Alert notifications
-│   │   │   ├── Button/        # Button component
-│   │   │   ├── Card/          # Post card component
-│   │   │   ├── Header/        # Page header
-│   │   │   ├── Input/         # Form inputs
-│   │   │   ├── Layout/        # Layout wrapper
-│   │   │   ├── Menu/          # Navigation menu
-│   │   │   ├── Spinner/       # Loading spinner
-│   │   │   └── TextEditor/    # TipTap rich text editor
 │   │   ├── config/            # App configuration
 │   │   ├── hooks/             # Custom React hooks
 │   │   ├── lib/               # Utilities and API client
@@ -47,8 +41,6 @@ newsletter/
 │   │   ├── root.tsx           # Root layout component
 │   │   └── root.css           # Global styles
 │   ├── public/                # Static assets
-│   │   ├── favicon/           # Favicon files
-│   │   └── images/            # Image assets
 │   ├── react-router.config.ts # React Router configuration
 │   ├── vite.config.ts         # Vite build configuration
 │   └── package.json
@@ -59,6 +51,12 @@ newsletter/
 │   │   ├── routes/            # API route handlers
 │   │   │   ├── posts.ts       # Post CRUD operations
 │   │   │   └── subscribers.ts # Subscriber management
+│   │   ├── workers/           # Background job workers
+│   │   │   ├── newsletter.ts  # Newsletter publishing and email workers
+│   │   │   ├── queue.ts       # Queue management utilities
+│   │   │   └── consts.ts      # Worker configuration constants
+│   │   ├── lib/
+│   │   │   └── jobs/          # PgBoss job queue setup
 │   │   └── index.ts           # Server entry point
 │   ├── prisma/
 │   │   ├── schema.prisma      # Database schema
@@ -66,6 +64,7 @@ newsletter/
 │   │   └── seed.ts            # Database seeding
 │   └── package.json
 ├── Dockerfile                 # Multi-stage Docker build
+├── docker-compose.yml         # Docker Compose for local development
 ├── ecosystem.config.js        # PM2 configuration for development
 ├── pnpm-workspace.yaml        # PNPM workspace configuration
 └── package.json               # Root package.json with workspace scripts
@@ -81,29 +80,40 @@ newsletter/
 ## 🛠️ Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone git@github.com:aemartos/newsletter.git
    cd newsletter
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
-   # Copy the example environment file
+   # Copy the example environment files
    cp server/.env.example server/.env
-   
-   # Edit the environment file with your database credentials
-   nano server/.env
+   cp client/.env.example client/.env
    ```
 
 4. **Set up the database**
+
+   The application includes a `docker-compose.yml` file to start a postgreSQL db:
+
    ```bash
+   # Start PostgreSQL database
+   docker-compose up -d newsletter-db
+   ```
+
+   ```bash
+   cd server
+
    # Generate Prisma client
-   cd server && pnpm db:generate
+   pnpm db:generate
    
    # Push the schema to your database
    pnpm db:push
@@ -115,15 +125,19 @@ newsletter/
 ## 🚀 Development
 
 ### Start both client and server with PM2
+
 ```bash
 pnpm dev
 ```
+
 or
+
 ```bash
 pm2 start
 ```
 
 ### Start individual services
+
 ```bash
 # Start only the client
 pnpm dev:client
@@ -131,7 +145,9 @@ pnpm dev:client
 # Start only the server
 pnpm dev:server
 ```
+
 or
+
 ```bash
 # Start only the client
 pm2 client
@@ -141,6 +157,7 @@ pm2 server
 ```
 
 ### PM2 Commands
+
 ```bash
 # View logs
 pnpm logs
@@ -158,6 +175,7 @@ pnpm delete
 ## 🗄️ Database
 
 ### Prisma Commands
+
 ```bash
 cd server
 
@@ -177,6 +195,7 @@ pnpm db:seed
 ### Database Schema
 
 The application uses the following main entities:
+
 - **Subscribers**: newsletter subscribers
 - **Posts**: posts and content
 - **EmailDeliveries**: history of emails sent
@@ -184,16 +203,48 @@ The application uses the following main entities:
 ## 🔧 API Endpoints
 
 ### Subscribers
+
 - `POST /api/subscribers` - Create a new user (subscribe)
 
 ### Posts
+
 - `GET /api/posts` - Get posts by filter (paginated)
 - `GET /api/posts/:slug` - Get post by slug
-- `POST /api/posts` - Create post (w/ ability to schedule)
+- `POST /api/posts` - Create post with optional scheduling
+  - Supports `schedule` field for future publication
+  - Automatically triggers background job for scheduled posts
+
+## 🔄 Background Job Processing
+
+### PgBoss Job Queue System
+
+The application uses **PgBoss** for reliable background job processing, leveraging PostgreSQL as the job queue backend.
+
+#### Job Types
+
+1. **Newsletter Publishing** (`newsletter.publish-post`)
+   - Publishes a scheduled post
+   - Updates post status to `PUBLISHED`
+   - Creates email delivery records for all subscribers
+   - Triggers individual email sending jobs
+
+2. **Email Sending** (`newsletter.send-email`)
+   - Sends individual emails to subscribers
+   - Uses SendGrid for email delivery
+   - Updates delivery status in database
+   - Handles retry logic for failed deliveries
+
+#### Worker Configuration
+
+- **Publish Worker**: 1 worker, processes posts sequentially
+- **Email Workers**: 25 concurrent workers for high-throughput email sending
+- **Retry Settings**: Up to 10 retries with exponential backoff
+- **Singleton Keys**: Prevents duplicate email sends per subscriber
 
 ## 🧪 Code Quality
 
 ### Linting
+
 ```bash
 # Lint all code
 pnpm lint
@@ -203,12 +254,14 @@ pnpm lint:fix
 ```
 
 ### Type Checking
+
 ```bash
 # Check types across the project
 pnpm type-check
 ```
 
 ### Code Formatting
+
 ```bash
 # Format code with Prettier
 pnpm format
@@ -226,9 +279,231 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [React Router](https://reactrouter.com/) for the SSR framework
 - [Prisma](https://www.prisma.io/) for the database ORM
 - [Express.js](https://expressjs.com/) for the backend framework
+- [PgBoss](https://github.com/timgit/pg-boss) for reliable job queue processing
+- [SendGrid](https://sendgrid.com/) for email delivery services
 
-## [TODO] Rationale
-- What were some of the reasons you chose the technology stack that you did?
-- What were some of the trade-offs you made when building this application. Why were these acceptable trade-offs?
-- Given more time, what improvements or optimizations would you want to add? When would you add them?
-- How would you deploy the application in a production-ready way?
+## 🤔 Rationale
+
+### Why These Technologies?
+
+#### **React Router v7 with SSR**
+
+- **Server-side rendering** for better SEO and initial load performance
+- **Built-in data loading** with loaders and actions
+
+#### **PgBoss for Job Processing**
+
+- **Reliability**: Jobs are persisted in PostgreSQL and won't be lost
+- **Scalability**: Multiple workers can process jobs concurrently
+- **Retry Logic**: Automatic retry with exponential backoff for failed jobs
+- **Singleton Jobs**: Prevents duplicate job execution
+- **Simple Setup**: Uses existing PostgreSQL database, no additional infrastructure
+
+#### **Prisma ORM**
+
+- **Type Safety**: Generated TypeScript types for database operations
+- **SQL Injection Protection**: Built-in query sanitization
+- **Migration Management**: Version-controlled database schema changes
+
+#### **SendGrid for Email**
+
+- **Reliability**: Enterprise-grade email delivery
+- **Analytics**: Built-in delivery tracking and analytics
+- **Scalability**: Handles high-volume email sending
+- **Compliance**: Built-in spam and compliance features
+
+### Trade-offs Made
+
+#### **PgBoss vs. Redis-based Queues**
+
+- **Trade-off**: Using PostgreSQL for job storage instead of Redis
+- **Why acceptable**:
+  - No additional infrastructure needed
+  - Jobs are persisted and won't be lost on restart
+  - Simpler deployment and monitoring
+- **Limitation**: Database load monitoring needed for optimal performance
+
+#### **Prisma Accelerate vs. Direct Connection**
+
+- **Trade-off**: Couldn't use Prisma Accelerate due to PgBoss requiring direct database URL (I'll need to research more bout this)
+- **Why acceptable**:
+  - Direct connection provides better performance for job processing
+  - Simpler configuration and debugging
+  - No additional service dependencies
+
+#### **HTML Content Storage**
+
+- **Security Concern**: Using `dangerouslySetInnerHTML` for post content
+- **Risk**: Potential XSS attacks from malicious scripts
+- **Mitigation**: Content should be sanitized before storage or use a safe HTML parser
+
+#### **React Router v7 vs. Traditional SPA**
+
+- **Trade-off**: Using SSR framework instead of client-side only React
+- **Why acceptable**:
+  - Better SEO and initial load performance
+  - Built-in data loading and form handling
+- **Limitation**: More complex deployment and server-side rendering considerations
+
+#### **Time Constraints - MVP Focus**
+
+- **Trade-off**: Limited time to build a complete newsletter platform
+- **Why acceptable**:
+  - Focus on core functionality (posts, subscribers, email delivery)
+  - Prioritize working features over perfect architecture
+  - Can iterate and improve over time
+- **Specific Limitations**:
+  - **Express.js Performance**: Using Express instead of faster frameworks
+  - **No Authentication**: Anyone can create posts, no user management
+  - **Basic Error Handling**: Generic error messages, no detailed error tracking
+  - **Limited Validation**: Basic form validation, no comprehensive input sanitization
+  - **No Rate Limiting**: API endpoints not protected against abuse
+  - **No Caching**: No Redis or CDN integration for performance
+  - **No Monitoring**: No application monitoring or alerting system
+
+### Future Improvements
+
+#### Security
+
+- **Content Sanitization**: Implement DOMPurify or similar for HTML content
+- **XSS Protection**: Replace `dangerouslySetInnerHTML` with safe HTML rendering
+- **Rate Limiting**: Add API rate limiting for public endpoints
+
+#### Validation & Error Handling
+
+- **Request Validation Middleware**: Add comprehensive validation in the backend
+- **Form Validation**: Implement React Hook Form with proper validation, watch, and error handling
+- **Error Handling**: Proper error handling for both frontend and backend
+- **Error Boundaries**: React error boundaries for graceful error handling
+
+#### Infrastructure & Performance
+
+- **Infinite Scroll Optimization**: Hide previous posts to avoid performance issues
+- **Batching**: Optimize jobs with batching strategies
+- **Caching Layer**: Add Redis for caching frequently accessed posts
+
+#### Monitoring & Observability
+
+- **Alerting System**: Implement comprehensive alerting for failures and performance issues
+- **Application Monitoring**: Integrate monitoring tools like DataDog for application performance monitoring
+- **Metrics Collection**: Custom metrics for business logic (email delivery rates, post engagement, etc.)
+
+#### Database Improvements
+
+- **Transaction Optimization**: Improve database transactions in API endpoints
+- **Data Archiving**: Archive old posts and email delivery records
+- **Read Replicas**: Implement read replicas for better read performance
+
+#### User Management & Authentication
+
+- **User System**: Implement user authentication and authorization
+- **Author Posts**: Associate posts with specific authors
+- **Roles & Permissions**: Role-based access control system
+- **OAuth Integration**: Social login with Google, GitHub, etc.
+
+#### New Features
+
+- **Posts Management**: Prevent modification of scheduled posts
+- **Subscription Management**: Enhanced subscriber management interface
+- **Search Functionality**: Implement search bar for posts
+- **Post Creation Improvements**:
+  - Image upload and management
+  - Rich text editor with more formatting options
+  - Post templates and reusable content blocks
+- **Draft Management**: View unpublished posts and schedules
+- **Autosave**: Implement automatic saving of post drafts
+- **Daily Post Merging**: Merge multiple scheduled posts into single daily newsletter
+- **Email Templates**: Rich HTML email templates with branding
+- **Content Import/Export**: Import/export posts in various formats
+- **Comment System**: Allow readers to comment on posts
+- **Social Sharing**: Social media sharing integration
+
+#### UI/UX Improvements
+
+- **Design Overhaul**: Complete UI/UX redesign for better user experience
+- **Responsive Design**: Enhanced mobile and tablet experience
+- **Accessibility**: WCAG compliance and screen reader support
+- **Internationalization**: Multi-language support
+
+## 🚀 Production Deployment
+
+With Render (or similar):
+
+- **Simple Setup**: Uses your existing Dockerfile with zero configuration
+- **Managed Database**: Built-in PostgreSQL with automatic backups (connection pooling handled by Prisma)
+- **Automatic Deployments**: Deploys on every git push or webhook trigger
+- **SSL Included**: Automatic HTTPS certificates
+- **Cost-Effective**: Cheap for starter plans
+- **No Infrastructure Management**: Focus on code, not servers
+
+### 1. Create Dockerfile
+
+Build Only 1 Server. For SSR (Server-Side Rendering) applications like this newsletter app, building a single server is the optimal approach:
+
+- **Shared Dependencies**: Both frontend and backend share the same Node.js runtime
+- **Simplified Routing**: React Router handles both API routes and page rendering
+- **Better Performance**: No network calls between separate services
+- **Easier Scaling**: Scale the entire application as one unit
+
+### 2. Connect to Render
+
+1. **Connect Repository**
+   - Go to [render.com](https://render.com)
+   - Connect your GitHub repository
+
+2. **Create Web Service**
+   - Choose "Web Service"
+   - Select your repository
+   - Render automatically detects your Dockerfile
+
+3. **Add Database**
+   - Create a new PostgreSQL database
+   - Render provides the connection string
+
+4. **Set Environment Variables**
+
+### 3. Auto-Deploy Strategy
+
+**Git Push Deployment:**
+
+- **Manual**: Use git tags for production releases
+- **Rollback**: Use Render dashboard to rollback to previous deployments
+
+**Deployment Commands:**
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+**Rollback Process:**
+
+1. Go to Render dashboard
+2. Click "Rollback" on any previous deployment
+
+### 4. Monitoring & Alerting
+
+#### **Essential Monitoring**
+
+- **Health Checks**: `/health` endpoint monitoring
+- **Database Monitoring**: Connection pool, query performance
+- **Job Queue Monitoring**: PgBoss job status and failures
+- **Application Metrics**: Response times, error rates
+
+#### **Alerting Rules**
+
+- Database connection failures
+- High error rates (>5%)
+- Job queue backlog (>100 pending jobs)
+- Email delivery failures (>10% failure rate)
+- Application downtime
+
+### 5. Scaling Strategies
+
+#### **Horizontal Scaling**
+
+- **Application**: Stateless design allows easy horizontal scaling
+- **Auto-scaling**: Scale down during low traffic periods
+- **Database**: Read replicas for read-heavy workloads
+- **Job Processing**: Scale PgBoss workers independently (implement batching)
+- **CDN**: Global content delivery for static assets
