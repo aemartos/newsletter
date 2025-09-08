@@ -1,19 +1,20 @@
 import {
   Prisma,
   PrismaClient,
-  Subscriber,
+  type Subscriber,
   PostStatus,
   DeliveryStatus,
 } from '@prisma/client';
-import { withAccelerate } from '@prisma/extension-accelerate';
-import { config } from '../src/config';
+// import { withAccelerate } from '@prisma/extension-accelerate';
+import { config } from './config/index.js';
 
 const globalForPrisma = globalThis as unknown as {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   prisma: any;
 };
 
-const prisma = new PrismaClient().$extends(withAccelerate());
+const prisma = new PrismaClient();
+// const prisma = new PrismaClient().$extends(withAccelerate());
 
 export const prismaClient = globalForPrisma.prisma ?? prisma;
 

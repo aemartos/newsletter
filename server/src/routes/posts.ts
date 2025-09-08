@@ -1,7 +1,7 @@
 import express from 'express';
-import { prismaClient, PostStatus } from '../../prisma';
-import { Queues, jobProcessor } from '../lib/jobs';
-import { PUBLISH_RETRY } from '../workers/consts';
+import { prismaClient, PostStatus } from '../prisma.js';
+import { Queues, jobProcessor } from '../lib/jobs/index.js';
+import { PUBLISH_RETRY } from '../workers/consts.js';
 
 const router: express.Router = express.Router();
 
@@ -147,7 +147,7 @@ router.post('/', async (req, res) => {
         { slug: post.slug },
         {
           ...PUBLISH_RETRY,
-          singletonKey: `publish:${post.id}:${scheduleDate.toISOString()}`, // de-dupe
+          singletonKey: `publish:${post.id}:${scheduleDate.toISOString()}`,
         },
         scheduleDate
       );
@@ -157,7 +157,7 @@ router.post('/', async (req, res) => {
         { slug: post.slug },
         {
           ...PUBLISH_RETRY,
-          singletonKey: `publish:${post.id}:${now}`,
+          singletonKey: `publish:${post.id}`,
         }
       );
     }

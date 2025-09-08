@@ -3,6 +3,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Placeholder from '@tiptap/extension-placeholder';
+import { Spinner } from '../Spinner';
 import styles from './styles.module.css';
 
 interface TextEditorProps {
@@ -15,6 +16,7 @@ export const TextEditor = ({ content, onChange }: TextEditorProps) => {
 
   const editor = useEditor({
     //Tiptap Error: SSR has been detected, please set `immediatelyRender` explicitly to `false` to avoid hydration mismatches.
+    // Official TipTap docs: https://tiptap.dev/docs/editor/getting-started/install/react#use-ssr-with-react-and-tiptap
     immediatelyRender: false,
     extensions: [
       StarterKit,
@@ -49,10 +51,6 @@ export const TextEditor = ({ content, onChange }: TextEditorProps) => {
     editor?.chain().focus().toggleUnderline().run();
   }, [editor]);
 
-  if (!editor) {
-    return null;
-  }
-
   return (
     <div
       className={`${styles['editor-wrapper']} ${isFocused ? styles.focused : ''}`}
@@ -61,7 +59,7 @@ export const TextEditor = ({ content, onChange }: TextEditorProps) => {
         <button
           type="button"
           onClick={toggleBold}
-          className={`${styles['toolbar-button']} ${editor.isActive('bold') ? styles.active : ''}`}
+          className={`${styles['toolbar-button']} ${editor && editor.isActive('bold') ? styles.active : ''}`}
           title="Bold"
         >
           B
@@ -69,7 +67,7 @@ export const TextEditor = ({ content, onChange }: TextEditorProps) => {
         <button
           type="button"
           onClick={toggleItalic}
-          className={`${styles['toolbar-button']} ${editor.isActive('italic') ? styles.active : ''}`}
+          className={`${styles['toolbar-button']} ${editor && editor.isActive('italic') ? styles.active : ''}`}
           title="Italic"
         >
           /
@@ -77,7 +75,7 @@ export const TextEditor = ({ content, onChange }: TextEditorProps) => {
         <button
           type="button"
           onClick={toggleUnderline}
-          className={`${styles['toolbar-button']} ${editor.isActive('underline') ? styles.active : ''}`}
+          className={`${styles['toolbar-button']} ${editor && editor.isActive('underline') ? styles.active : ''}`}
           title="Underline"
         >
           U
@@ -85,7 +83,7 @@ export const TextEditor = ({ content, onChange }: TextEditorProps) => {
       </div>
 
       <div className={styles['editor-content']}>
-        <EditorContent editor={editor} />
+        {!editor ? <Spinner /> : <EditorContent editor={editor} />}
       </div>
     </div>
   );

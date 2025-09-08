@@ -1,3 +1,4 @@
+import { CSSProperties } from 'react';
 import { Link } from 'react-router';
 import styles from './styles.module.css';
 
@@ -7,7 +8,7 @@ interface ButtonProps {
   text: string;
   to?: string;
   disabled?: boolean;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   className?: string;
   onClick?: () => void;
 }

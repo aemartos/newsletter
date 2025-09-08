@@ -13,7 +13,6 @@ A full-stack newsletter application built with React Router SSR, TypeScript, Exp
 - **TipTap** rich text editor for post creation
 - **TanStack Query** for infinity scroll
 - **CSS Modules** for component-scoped styling
-- **Vite** for fast development and building
 
 #### Server (`/server`)
 
@@ -39,10 +38,10 @@ newsletter/
 │   │   │   └── subscribe.tsx  # Newsletter subscription
 │   │   ├── utils/             # Helper functions
 │   │   ├── root.tsx           # Root layout component
-│   │   └── root.css           # Global styles
-│   ├── public/                # Static assets
+│   │   ├── root.css           # Global styles
+│   │   └── routes.ts          # Route configuration
+│   ├── public/                # Static assets (favicons, images)
 │   ├── react-router.config.ts # React Router configuration
-│   ├── vite.config.ts         # Vite build configuration
 │   └── package.json
 ├── server/                    # Express.js API server
 │   ├── src/
@@ -54,18 +53,21 @@ newsletter/
 │   │   ├── workers/           # Background job workers
 │   │   │   ├── newsletter.ts  # Newsletter publishing and email workers
 │   │   │   ├── queue.ts       # Queue management utilities
-│   │   │   └── consts.ts      # Worker configuration constants
+│   │   │   ├── consts.ts      # Worker configuration constants
+│   │   │   └── index.ts       # Worker registration
 │   │   ├── lib/
 │   │   │   └── jobs/          # PgBoss job queue setup
-│   │   └── index.ts           # Server entry point
+│   │   ├── prisma.ts          # Prisma client setup
+│   │   └── index.ts           # Server entry point with SSR
 │   ├── prisma/
 │   │   ├── schema.prisma      # Database schema
-│   │   ├── prisma.ts          # Prisma client setup
-│   │   └── seed.ts            # Database seeding
+│   │   ├── seed.ts            # Database seeding
+│   │   └── migrations/        # Database migrations
 │   └── package.json
 ├── Dockerfile                 # Multi-stage Docker build
 ├── docker-compose.yml         # Docker Compose for local development
 ├── ecosystem.config.js        # PM2 configuration for development
+├── render.yaml                # Render deployment configuration (for the preDeployCommand, but it's only in paid tiers)
 ├── pnpm-workspace.yaml        # PNPM workspace configuration
 └── package.json               # Root package.json with workspace scripts
 ```
@@ -102,7 +104,7 @@ newsletter/
 
 4. **Set up the database**
 
-   The application includes a `docker-compose.yml` file to start a postgreSQL db:
+   The application includes a `docker-compose.yml` file to start a PostgreSQL database:
 
    ```bash
    # Start PostgreSQL database
@@ -202,17 +204,24 @@ The application uses the following main entities:
 
 ## 🔧 API Endpoints
 
+### Health Check
+
+- `GET /api/health` - Application health status and database connectivity
+
 ### Subscribers
 
-- `POST /api/subscribers` - Create a new user (subscribe)
+- `POST /api/subscribers` - Create a new subscriber (subscribe)
 
 ### Posts
 
 - `GET /api/posts` - Get posts by filter (paginated)
+  - Query parameters: `limit`, `offset`, `status`, `sortBy`, `sortOrder`
 - `GET /api/posts/:slug` - Get post by slug
 - `POST /api/posts` - Create post with optional scheduling
   - Supports `schedule` field for future publication
   - Automatically triggers background job for scheduled posts
+  - Required fields: `title`, `slug`, `content`
+  - Optional fields: `excerpt`, `schedule`
 
 ## 🔄 Background Job Processing
 
@@ -382,11 +391,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Batching**: Optimize jobs with batching strategies
 - **Caching Layer**: Add Redis for caching frequently accessed posts
 
-#### Monitoring & Observability
+#### Monitoring, Observability & Reliability
 
 - **Alerting System**: Implement comprehensive alerting for failures and performance issues
 - **Application Monitoring**: Integrate monitoring tools like DataDog for application performance monitoring
 - **Metrics Collection**: Custom metrics for business logic (email delivery rates, post engagement, etc.)
+- **Testing**: Unit, e2e, integration, stress...
 
 #### Database Improvements
 
@@ -436,14 +446,21 @@ With Render (or similar):
 - **Cost-Effective**: Cheap for starter plans
 - **No Infrastructure Management**: Focus on code, not servers
 
-### 1. Create Dockerfile
+### 1. Dockerfile Configuration
 
-Build Only 1 Server. For SSR (Server-Side Rendering) applications like this newsletter app, building a single server is the optimal approach:
+The application uses a **multi-stage Docker build** optimized for production:
 
-- **Shared Dependencies**: Both frontend and backend share the same Node.js runtime
-- **Simplified Routing**: React Router handles both API routes and page rendering
-- **Better Performance**: No network calls between separate services
-- **Easier Scaling**: Scale the entire application as one unit
+- **Base Stage**: Installs pnpm and dependencies
+- **Builder Stage**: Generates Prisma client and builds both client and server
+- **Production Stage**: Creates a minimal production image with only necessary files
+
+**Architecture:**
+
+- **Development**: Two separate servers (Express API + React Router dev server)
+- **Production**: Single Express server that serves everything:
+  - API routes (`/api/*`)
+  - Static assets (from built client)
+  - React Router SSR (imports built server bundle)
 
 ### 2. Connect to Render
 
@@ -485,7 +502,7 @@ git push origin v1.0.0
 
 #### **Essential Monitoring**
 
-- **Health Checks**: `/health` endpoint monitoring
+- **Health Checks**: `/api/health` endpoint monitoring
 - **Database Monitoring**: Connection pool, query performance
 - **Job Queue Monitoring**: PgBoss job status and failures
 - **Application Metrics**: Response times, error rates

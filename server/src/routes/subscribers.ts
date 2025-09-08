@@ -1,5 +1,5 @@
 import express from 'express';
-import { prismaClient } from '../../prisma';
+import { prismaClient } from '../prisma.js';
 
 const router: express.Router = express.Router();
 
@@ -33,9 +33,10 @@ router.post('/', async (req, res) => {
       message: 'Successfully subscribed to the newsletter!',
     });
   } catch (error) {
-    throw new Error(
-      `Failed to create subscriber: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
+    return res.status(500).json({
+      success: false,
+      message: `Failed to create subscriber: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    });
   }
 });
 

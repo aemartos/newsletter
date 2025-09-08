@@ -1,8 +1,9 @@
-import { useLoaderData } from 'react-router';
 import { useEffect } from 'react';
+import { useLoaderData } from 'react-router';
 import { Header, Card, Button, Spinner } from '../components';
 import { useInfinitePosts } from '../hooks/usePosts';
-import { fetchPosts, GetPostsParams, Routes, PostStatus } from '../lib';
+import { fetchPosts, GetPostsParams, PostStatus, PostsResponse } from '../lib';
+import { Routes } from '../lib';
 import styles from './styles.module.css';
 
 const filters: GetPostsParams = {
@@ -12,42 +13,45 @@ const filters: GetPostsParams = {
   sortOrder: 'desc',
 };
 
-export async function loader() {
+type IndexLoaderData = {
+  initialPosts: PostsResponse | null;
+  error: string | null;
+};
+
+export async function loader(): Promise<IndexLoaderData> {
   try {
-    const postsResponse = await fetchPosts(filters);
-    return {
-      initialPosts: postsResponse.data.posts,
-      nextCursor: postsResponse.data.pagination.nextCursor,
-    };
+    const initialPosts = await fetchPosts(filters);
+    return { initialPosts, error: null };
   } catch (error) {
-    console.error('Error in postsLoader:', error);
     return {
-      initialPosts: [],
-      nextCursor: null,
+      initialPosts: null,
+      error: error instanceof Error ? error.message : 'Failed to load posts',
     };
   }
 }
 
 const Index = () => {
-  const { initialPosts, nextCursor } = useLoaderData<typeof loader>();
+  const { initialPosts, error: loaderError } = useLoaderData<IndexLoaderData>();
 
-  // Use infinite query for infinite scroll, starting from the cursor after SSR posts
+  // Use infinite query for pagination, starting with server-fetched data
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-    error,
-  } = useInfinitePosts({
-    cursor: nextCursor, // Start from the cursor after the SSR posts
-    ...filters,
+    error: queryError,
+  } = useInfinitePosts(filters, {
+    initialData: initialPosts
+      ? {
+          pages: [initialPosts],
+          pageParams: [undefined],
+        }
+      : undefined,
   });
 
-  // Get all posts from infinite query
-  const infinitePosts = data?.pages.flatMap(page => page.data.posts) ?? [];
-
-  const allPosts = [...initialPosts, ...infinitePosts];
+  const posts = data?.pages.flatMap(page => page.data.posts) ?? [];
+  const error = loaderError || queryError;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -104,22 +108,10 @@ const Index = () => {
               <p>Failed to load posts. Please try again later.</p>
             </div>
           ) : (
-            allPosts.map(post => <Card key={post.id} post={post} />)
+            posts.map(post => <Card key={post.id} post={post} />)
           )}
         </div>
-        {(isFetchingNextPage || isLoading) && (
-          <span
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '100%',
-              height: '10em',
-            }}
-          >
-            <Spinner />
-          </span>
-        )}
+        {(isFetchingNextPage || isLoading) && !error && <Spinner />}
       </div>
     </div>
   );

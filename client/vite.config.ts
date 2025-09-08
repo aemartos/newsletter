@@ -8,16 +8,5 @@ export default defineConfig({
   },
   build: {
     outDir: 'build',
-    rollupOptions: {
-      output: {
-        // Ensure server build goes to build/index.js
-        entryFileNames: chunkInfo => {
-          if (chunkInfo.name === 'server') {
-            return 'index.js';
-          }
-          return '[name]-[hash].js';
-        },
-      },
-    },
   },
 });

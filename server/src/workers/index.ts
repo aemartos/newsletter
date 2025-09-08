@@ -1,4 +1,4 @@
-import { registerNewsletterWorkers } from './newsletter';
+import { registerNewsletterWorkers } from './newsletter.js';
 
 type Registrar = () => Promise<void> | void;
 

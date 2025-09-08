@@ -1,3 +1,4 @@
+import { ReactNode, useState } from 'react';
 import {
   Links,
   Meta,
@@ -10,7 +11,6 @@ import {
 } from 'react-router';
 import type { LinksFunction } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
 
 import { GenericError, Layout } from './components';
 import './root.css';
@@ -73,7 +73,7 @@ export const links: LinksFunction = () => [
   },
 ];
 
-const ViewportLayout = ({ children }: { children: React.ReactNode }) => {
+const ViewportLayout = ({ children }: { children: ReactNode }) => {
   return (
     <html lang="en">
       <head>

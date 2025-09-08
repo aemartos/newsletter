@@ -1,3 +1,4 @@
+import { CSSProperties } from 'react';
 import styles from './styles.module.css';
 import { Button } from '../Button';
 import { Header } from '../Header';
@@ -6,7 +7,7 @@ interface GenericErrorProps {
   title: string;
   description?: string;
   to?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }
 
 export const GenericError = ({

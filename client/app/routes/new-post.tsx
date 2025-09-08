@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ChangeEvent } from 'react';
 import { ActionFunctionArgs, redirect, useActionData } from 'react-router';
 import { Alert, Button, Header, Input, TextEditor } from '../components';
 import { Routes, createPost } from '../lib';
@@ -12,6 +12,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const schedule = formData.get('schedule') as string;
   const excerpt = formData.get('excerpt') as string;
   const content = formData.get('content') as string;
+
+  console.log('[New Post] Form data:', Object.fromEntries(formData.entries()));
+  console.log('[New Post] Title from form:', title, typeof title);
+  console.log('[New Post] Slug from form:', slug, typeof slug);
+  console.log('[New Post] Schedule from form:', schedule, typeof schedule);
+  console.log('[New Post] Excerpt from form:', excerpt, typeof excerpt);
+  console.log('[New Post] Content from form:', content, typeof content);
 
   try {
     await createPost({
@@ -42,9 +49,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 const NewPost = () => {
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
-  const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
-  const [schedule, setSchedule] = useState<string | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const actionData = useActionData() as
@@ -58,7 +63,7 @@ const NewPost = () => {
   }, [actionData]);
 
   const handleTitleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const newTitle = e.target.value;
     setTitle(newTitle);
@@ -91,7 +96,7 @@ const NewPost = () => {
           paddingTop: 'var(--spacing-12)',
         }}
       />
-      <form method="post" className={styles['post-form']}>
+      <form method="post" action="" className={styles['post-form']}>
         <div className={styles['post-form-data']}>
           <div className={styles['title-row']}>
             <Input
@@ -114,11 +119,9 @@ const NewPost = () => {
             />
             <Input
               label="Schedule"
-              type="date"
+              type="datetime-local"
               name="schedule"
               min={new Date().toISOString().split('T')[0]}
-              value={schedule}
-              onChange={e => setSchedule(e.target.value)}
             />
           </div>
           <Input
@@ -126,8 +129,6 @@ const NewPost = () => {
             type="text-area"
             name="excerpt"
             placeholder="Write a short excerpt for the post"
-            value={excerpt}
-            onChange={e => setExcerpt(e.target.value)}
             required
           />
         </div>

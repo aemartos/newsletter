@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { CSSProperties, useEffect, useState } from 'react';
 import styles from './styles.module.css';
 
 interface AlertProps {
   type: 'success' | 'error' | 'warning' | 'info';
   message?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   autoDismiss?: boolean;
   dismissAfter?: number; // milliseconds
   onDismiss?: () => void;

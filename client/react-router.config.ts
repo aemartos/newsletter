@@ -4,7 +4,8 @@ export default {
   ssr: true,
   serverModuleFormat: 'esm',
   serverBuildFile: 'index.js',
+  buildDirectory: 'build',
   async prerender() {
-    return ['/', '/post/new', '/subscribe'];
+    return ['/post/new', '/subscribe'];
   },
 } satisfies Config;

@@ -1,20 +1,32 @@
 import { useLoaderData } from 'react-router';
-import { fetchPost, Routes } from '../lib';
+import { Routes, fetchPost, Post } from '../lib';
 import { Header, Button, GenericError } from '../components';
 import styles from './styles.module.css';
 import { formatDate } from '../utils';
 
-export async function loader({ params }: { params: { slug: string } }) {
+type PostLoaderData = {
+  post: Post | null;
+  error: string | null;
+};
+
+export async function loader({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<PostLoaderData> {
   try {
     const post = await fetchPost(params.slug);
-    return { post };
+    return { post, error: null };
   } catch (error) {
-    return { post: null, error: 'Post not found' };
+    return {
+      post: null,
+      error: error instanceof Error ? error.message : 'Post not found',
+    };
   }
 }
 
 export default function PostView() {
-  const { post, error } = useLoaderData<typeof loader>();
+  const { post, error } = useLoaderData<PostLoaderData>();
 
   if (error || !post) {
     return (

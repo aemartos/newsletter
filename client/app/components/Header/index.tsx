@@ -1,9 +1,10 @@
+import { CSSProperties } from 'react';
 import styles from './styles.module.css';
 
 interface HeaderProps {
   title: string;
   description?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }
 
 export const Header = ({ title, description, style }: HeaderProps) => {

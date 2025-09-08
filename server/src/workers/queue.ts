@@ -1,5 +1,5 @@
 import type { Job } from 'pg-boss';
-import { jobProcessor } from '../lib/jobs';
+import { jobProcessor } from '../lib/jobs/index.js';
 
 /**
  * Register one worker on a queue using the batch API with batchSize: 1.

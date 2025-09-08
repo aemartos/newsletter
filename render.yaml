@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: newsletter-app
+    runtime: node
+    buildCommand: pnpm build
+    startCommand: pnpm start
+    preDeployCommand: pnpm migrate
+    healthCheckPath: /api/health
+    dockerfilePath: ./Dockerfile

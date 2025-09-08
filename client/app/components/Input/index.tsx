@@ -1,33 +1,31 @@
+import { forwardRef, RefObject } from 'react';
 import styles from './styles.module.css';
 
-interface InputProps
-  extends Omit<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    'type' | 'onChange'
-  > {
+type InputProps = React.ComponentPropsWithoutRef<'input'> & {
   type: React.HTMLInputTypeAttribute | 'text-area';
   label?: string;
-  onChange?: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => void;
-}
+};
 
-export const Input = ({ type, label, onChange, ...props }: InputProps) => {
+export const Input = forwardRef<
+  HTMLInputElement | HTMLTextAreaElement,
+  InputProps
+>(({ type, label, ...props }, ref) => {
   let element = (
     <input
+      ref={ref as RefObject<HTMLInputElement>}
       className={styles.input}
       type={type}
-      onChange={onChange}
       {...props}
     />
   );
+
   if (type === 'text-area') {
     element = (
       <textarea
+        ref={ref as RefObject<HTMLTextAreaElement>}
         className={`${styles.input} ${styles.textarea}`}
-        onChange={onChange}
         rows={2}
-        {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+        {...(props as React.ComponentPropsWithoutRef<'textarea'>)}
       />
     );
   }
@@ -42,4 +40,6 @@ export const Input = ({ type, label, onChange, ...props }: InputProps) => {
       {element}
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';

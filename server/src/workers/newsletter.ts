@@ -1,15 +1,15 @@
-import { Queues, jobProcessor } from '../lib/jobs';
+import { Queues, jobProcessor } from '../lib/jobs/index.js';
 import {
   prismaClient,
   Prisma,
   Subscriber,
   PostStatus,
   DeliveryStatus,
-} from '../../prisma';
-import { sendEmail } from '../providers/email';
-import { workBatch, startWorkersBatch } from './queue';
-import { config } from '../config';
-import { SEND_WORKERS } from './consts';
+} from '../prisma.js';
+import { sendEmail } from '../providers/email.js';
+import { workBatch, startWorkersBatch } from './queue.js';
+import { config } from '../config/index.js';
+import { SEND_WORKERS } from './consts.js';
 
 export async function registerNewsletterWorkers(): Promise<void> {
   // A) Publish: single worker, batchSize:1
@@ -101,7 +101,7 @@ export async function registerNewsletterWorkers(): Promise<void> {
       } catch (err) {
         await prismaClient.emailDelivery.update({
           where: { id: delivery.id },
-          data: { lastError: String(err) },
+          data: { status: DeliveryStatus.FAILED, lastError: String(err) },
         });
         throw err; // retry with backoff
       }

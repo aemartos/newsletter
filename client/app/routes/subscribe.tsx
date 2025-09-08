@@ -1,12 +1,25 @@
+import { useEffect, useState } from 'react';
 import { Link, useActionData } from 'react-router';
 import { Header, Input, Button, Alert } from '../components';
 import { Routes, createSubscriber } from '../lib';
-import { useState, useEffect } from 'react';
 import styles from './styles.module.css';
 
-export const action = async ({ request }: { request: Request }) => {
+type ActionData = {
+  success?: boolean;
+  error?: string;
+  message?: string;
+};
+
+export const action = async ({
+  request,
+}: {
+  request: Request;
+}): Promise<ActionData> => {
   const formData = await request.formData();
   const email = formData.get('email') as string;
+
+  console.log('[Subscribe] Form data:', Object.fromEntries(formData.entries()));
+  console.log('[Subscribe] Email from form:', email, typeof email);
   try {
     await createSubscriber(email);
     return {
@@ -18,16 +31,14 @@ export const action = async ({ request }: { request: Request }) => {
       success: false,
       error:
         error instanceof Error
-          ? error.message
-          : 'Failed to subscribe. Please try again later.',
+          ? `Failed to create subscriber: ${error.message}. Please try again later.`
+          : 'Failed to create subscriber. Please try again later.',
     };
   }
 };
 
 const Subscribe = () => {
-  const actionData = useActionData() as
-    | { success?: boolean; error?: string; message?: string }
-    | undefined;
+  const actionData = useActionData<ActionData>();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -58,6 +69,7 @@ const Subscribe = () => {
       />
       <form
         method="post"
+        action=""
         onSubmit={() => setIsSubmitting(true)}
         className={styles['form-subscribe']}
       >

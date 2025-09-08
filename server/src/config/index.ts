@@ -16,6 +16,18 @@ export interface Config {
   api: {
     baseUrl: string;
   };
+  helmet: {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: string[];
+        scriptSrc: string[];
+        styleSrc: string[];
+        fontSrc: string[];
+        imgSrc: string[];
+        connectSrc: string[];
+      };
+    };
+  };
 }
 
 const validateRequiredEnvVars = (): void => {
@@ -49,6 +61,22 @@ const createConfig = (): Config => {
     },
     api: {
       baseUrl: process.env.API_BASE_URL || 'http://localhost:3001/api',
+    },
+    helmet: {
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            'https://fonts.googleapis.com',
+          ],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'"],
+        },
+      },
     },
   };
 

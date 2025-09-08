@@ -1,5 +1,5 @@
 import PgBoss from 'pg-boss';
-import { config } from '../../config';
+import { config } from '../../config/index.js';
 
 export const Queues = {
   NEWSLETTER: {

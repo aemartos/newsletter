@@ -1,32 +1,16 @@
 {
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
   "compilerOptions": {
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES6"
-    ],
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "jsx": "react-jsx",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
     "target": "ES2022",
-    "strict": true,
-    "allowJs": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "strict": true,
     "noEmit": true,
-    "baseUrl": ".",
-    "paths": {
-      "~/*": [
-        "./app/*"
-      ]
-    }
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true
   }
 }

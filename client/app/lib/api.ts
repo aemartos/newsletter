@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { clientConfig } from '../config/index.js';
 
-const API_BASE_URL = clientConfig.api.baseUrl;
+const getApiBaseUrl = () => clientConfig.api.baseUrl;
 
 export const PostStatus = {
   DRAFT: 'DRAFT',
@@ -57,7 +57,7 @@ export const fetchPosts = async (
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/posts?${searchParams.toString()}`
+      `${getApiBaseUrl()}/posts?${searchParams.toString()}`
     );
 
     if (!response.ok) {
@@ -74,7 +74,7 @@ export const fetchPosts = async (
 
 export const fetchPost = async (slug: string): Promise<Post> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/posts/${slug}`);
+    const response = await fetch(`${getApiBaseUrl()}/posts/${slug}`);
     if (!response.ok) {
       if (response.status === 404) {
         throw new Error('Post not found');
@@ -95,7 +95,7 @@ export const fetchPost = async (slug: string): Promise<Post> => {
 
 export const createPost = async (post: Partial<Post>): Promise<void> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/posts`, {
+    const response = await fetch(`${getApiBaseUrl()}/posts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ export const createPost = async (post: Partial<Post>): Promise<void> => {
 
 export const createSubscriber = async (email: string): Promise<void> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/subscribers`, {
+    const response = await fetch(`${getApiBaseUrl()}/subscribers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

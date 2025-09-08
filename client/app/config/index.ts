@@ -6,9 +6,15 @@ export interface ClientConfig {
 }
 
 const createClientConfig = (): ClientConfig => {
+  const defaultApiUrl =
+    import.meta.env.VITE_API_BASE_URL ||
+    (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      ? 'http://localhost:3001/api'
+      : '/api');
+
   return {
     api: {
-      baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api',
+      baseUrl: defaultApiUrl,
     },
   };
 };

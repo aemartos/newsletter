@@ -1,10 +1,11 @@
+import { ReactNode } from 'react';
 import { Menu } from '../Menu';
 import styles from './styles.module.css';
 
 interface LayoutProps {
   centered?: boolean;
   showMenu?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export const Layout = ({

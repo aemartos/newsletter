@@ -1,3 +1,4 @@
+import { CSSProperties } from 'react';
 import { Link } from 'react-router';
 import { formatDate } from '../../utils';
 import { Routes } from '../../lib';
@@ -14,7 +15,7 @@ interface CardProps {
     category: string | null;
     createdAt: string;
   };
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }
 
 export const Card = ({ post, style }: CardProps) => {

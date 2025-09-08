@@ -4,14 +4,14 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { createRequestHandler } from '@react-router/express';
-import { prismaClient } from '../prisma';
-import { startJobProcessor, stopJobProcessor } from './lib/jobs';
-import { registerWorkers } from './workers';
-import { config } from './config';
-import postsRouter from './routes/posts';
-import subscribersRouter from './routes/subscribers';
+import { prismaClient } from './prisma.js';
+import { startJobProcessor, stopJobProcessor } from './lib/jobs/index.js';
+import { registerWorkers } from './workers/index.js';
+import { config } from './config/index.js';
+import postsRouter from './routes/posts.js';
+import subscribersRouter from './routes/subscribers.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,7 +19,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = config.port;
 
-app.use(helmet());
+app.use(helmet(config.helmet));
 app.use(compression());
 app.use(morgan('combined'));
 app.use(
@@ -28,16 +28,73 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
 
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
+/**
+ * !IMPORTANT:
+ * Do NOT mount `express.json()` or `express.urlencoded()` globally.
+ * React Router server actions (`await request.formData()`) need access
+ * to the raw request body stream. If global body parsers are used,
+ * they will consume the stream before React Router can read it,
+ * resulting in empty `{}` formData and null fields.
+ *
+ * Instead, scope body parsers only to `/api` routes,
+ * where you explicitly want to handle JSON or urlencoded requests.
+ */
+// app.use(express.json({ limit: '10mb' }));
+// app.use(express.urlencoded({ extended: true }));
+
+app.get('/health', async (_req, res) => {
+  try {
+    // Test database connectivity
+    await prismaClient.$queryRaw`SELECT 1`;
+
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      database: 'connected',
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      database: 'disconnected',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
 });
+
+// ---- Static client assets (served before SSR) ----
+const clientAssetsDir = path.resolve(__dirname, '../../client/build/client');
+const serverBundlePath = path.resolve(
+  __dirname,
+  '../../client/build/server/index.js'
+);
+
+app.use(
+  '/assets',
+  express.static(path.join(clientAssetsDir, 'assets'), {
+    immutable: true,
+    maxAge: '1y',
+  })
+);
+
+app.use(
+  '/images',
+  express.static(path.join(clientAssetsDir, 'images'), {
+    maxAge: '1d',
+  })
+);
+
+// Handle root favicon.ico requests - serve light favicon as default
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(clientAssetsDir, 'favicon', 'light', 'favicon.ico'));
+});
+
+// ---- API routes (with body parsers scoped to /api) ----
+app.use('/api', express.json({ limit: '10mb' }));
+app.use('/api', express.urlencoded({ extended: true }));
 
 app.use('/api/posts', postsRouter);
 app.use('/api/subscribers', subscribersRouter);
@@ -46,7 +103,7 @@ app.use('/api/subscribers', subscribersRouter);
 app.use(
   (
     err: Error,
-    req: express.Request,
+    _req: express.Request,
     res: express.Response,
     _next: express.NextFunction
   ) => {
@@ -60,19 +117,12 @@ app.use(
   }
 );
 
-// Create React Router request handler for SSR
-const buildPath = path.join(__dirname, '../../../client/build');
+// ---- React Router SSR handler LAST ----
 const requestHandler = createRequestHandler({
-  build: () => import(`${buildPath}/index.js`),
+  // Import the built server bundle at runtime; use file URL for absolute path safety in ESM
+  build: () => import(pathToFileURL(serverBundlePath).href),
   mode: config.nodeEnv,
 });
-
-// Serve static assets
-app.use(
-  express.static(buildPath, {
-    index: false, // Don't serve index.html for static assets
-  })
-);
 
 // Handle all non-API routes with React Router SSR
 app.all('*', (req, res, next) => {
@@ -96,7 +146,7 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
-// Handles when PM2 sends a termination signal
+// Handles when PM2/Render sends a termination signal
 process.on('SIGTERM', async () => {
   console.log('Shutting down gracefully...');
   await stopJobProcessor();

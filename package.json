@@ -3,22 +3,15 @@
   "version": "1.0.0",
   "description": "Full-stack newsletter app with React Router SSR",
   "private": true,
-  "workspaces": [
-    "client",
-    "server"
-  ],
   "scripts": {
     "dev": "pm2 start ecosystem.config.js",
     "dev:client": "cd client && pnpm dev",
     "dev:server": "cd server && pnpm dev",
-    "build": "pnpm build:client && pnpm build:server",
-    "build:client": "cd client && pnpm build",
-    "build:server": "cd server && pnpm db:generate:prod && pnpm build",
-    "start": "cd server && node dist/src/index.js",
-    "stop": "pm2 stop all",
-    "restart": "pm2 restart all",
-    "delete": "pm2 delete all",
-    "logs": "pm2 logs",
+    "build": "cd client && pnpm build && cd ../server && pnpm db:generate && pnpm build",
+    "start": "cd server && node dist/index.js",
+    "migrate": "cd server && pnpm db:deploy",
+    "db:deploy": "cd server && pnpm db:deploy",
+    "db:seed": "cd server && pnpm db:seed",
     "lint": "pnpm -r lint",
     "lint:fix": "pnpm -r lint:fix",
     "type-check": "pnpm -r type-check"

@@ -1,9 +1,10 @@
+import { CSSProperties } from 'react';
 import { Link } from 'react-router';
 import styles from './styles.module.css';
 
 interface MenuProps {
   items: { text: string; href: string }[];
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }
 
 export const Menu = ({ items, style }: MenuProps) => {

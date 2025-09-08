@@ -1,5 +1,5 @@
 import sgMail from '@sendgrid/mail';
-import { config } from '../config';
+import { config } from '../config/index.js';
 
 export interface SendEmailProps {
   dynamic_template_data: Record<string, string>;
