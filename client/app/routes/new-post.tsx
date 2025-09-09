@@ -2,8 +2,8 @@ import { useEffect, useState, ChangeEvent } from 'react';
 import { ActionFunctionArgs, redirect, useActionData } from 'react-router';
 import { Alert, Button, Header, Input, TextEditor } from '../components';
 import { Routes, createPost } from '../lib';
+import { generateSlug, getUTCDate } from '../utils';
 import styles from './styles.module.css';
-import { generateSlug } from '../utils';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
@@ -13,19 +13,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const excerpt = formData.get('excerpt') as string;
   const content = formData.get('content') as string;
 
-  console.log('[New Post] Form data:', Object.fromEntries(formData.entries()));
-  console.log('[New Post] Title from form:', title, typeof title);
-  console.log('[New Post] Slug from form:', slug, typeof slug);
-  console.log('[New Post] Schedule from form:', schedule, typeof schedule);
-  console.log('[New Post] Excerpt from form:', excerpt, typeof excerpt);
-  console.log('[New Post] Content from form:', content, typeof content);
+  const scheduleUTC = getUTCDate(schedule);
 
   try {
     await createPost({
       title,
       slug,
-      // TODO: Ensure schedule is in ISO string format
-      schedule: schedule ? new Date(schedule).toISOString() : undefined,
+      schedule: scheduleUTC,
       excerpt,
       content,
     });
@@ -81,7 +75,7 @@ const NewPost = () => {
           type={'error'}
           message={actionData.error}
           autoDismiss
-          dismissAfter={3000}
+          dismissAfter={5000}
         />
       )}
       <Button

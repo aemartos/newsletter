@@ -18,8 +18,6 @@ export const action = async ({
   const formData = await request.formData();
   const email = formData.get('email') as string;
 
-  console.log('[Subscribe] Form data:', Object.fromEntries(formData.entries()));
-  console.log('[Subscribe] Email from form:', email, typeof email);
   try {
     await createSubscriber(email);
     return {

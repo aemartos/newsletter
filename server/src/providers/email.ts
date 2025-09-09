@@ -21,10 +21,12 @@ export const sendEmail = async ({
   };
   await sgMail
     .send(msg)
-    .then(() => {
+    .then(res => {
       console.log('Email sent successfully');
+      return res;
     })
     .catch(error => {
       console.error('Error sending email', error);
+      throw error;
     });
 };

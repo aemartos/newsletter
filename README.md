@@ -158,22 +158,6 @@ pm2 client
 pm2 server
 ```
 
-### PM2 Commands
-
-```bash
-# View logs
-pnpm logs
-
-# Stop all processes
-pnpm stop all
-
-# Restart all processes
-pnpm restart
-
-# Delete all processes
-pnpm delete
-```
-
 ## 🗄️ Database
 
 ### Prisma Commands
@@ -215,7 +199,7 @@ The application uses the following main entities:
 ### Posts
 
 - `GET /api/posts` - Get posts by filter (paginated)
-  - Query parameters: `limit`, `offset`, `status`, `sortBy`, `sortOrder`
+  - Query parameters: `limit`, `cursor`, `status`, `sortBy`, `sortOrder`
 - `GET /api/posts/:slug` - Get post by slug
 - `POST /api/posts` - Create post with optional scheduling
   - Supports `schedule` field for future publication
@@ -267,16 +251,6 @@ pnpm lint:fix
 ```bash
 # Check types across the project
 pnpm type-check
-```
-
-### Code Formatting
-
-```bash
-# Format code with Prettier
-pnpm format
-
-# Check formatting
-pnpm format:check
 ```
 
 ## 📄 License
@@ -400,6 +374,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 #### Database Improvements
 
+- **Expand model**: adapt the model to new features/needs
 - **Transaction Optimization**: Improve database transactions in API endpoints
 - **Data Archiving**: Archive old posts and email delivery records
 - **Read Replicas**: Implement read replicas for better read performance
@@ -434,13 +409,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Responsive Design**: Enhanced mobile and tablet experience
 - **Accessibility**: WCAG compliance and screen reader support
 - **Internationalization**: Multi-language support
+- **SEO**
 
 ## 🚀 Production Deployment
 
 With Render (or similar):
 
 - **Simple Setup**: Uses your existing Dockerfile with zero configuration
-- **Managed Database**: Built-in PostgreSQL with automatic backups (connection pooling handled by Prisma)
+- **Managed Database**: Built-in PostgreSQL with automatic backups
 - **Automatic Deployments**: Deploys on every git push or webhook trigger
 - **SSL Included**: Automatic HTTPS certificates
 - **Cost-Effective**: Cheap for starter plans
@@ -484,7 +460,7 @@ The application uses a **multi-stage Docker build** optimized for production:
 **Git Push Deployment:**
 
 - **Manual**: Use git tags for production releases
-- **Rollback**: Use Render dashboard to rollback to previous deployments
+- **Rollback**: Use Render dashboard to deploy any previous deployments
 
 **Deployment Commands:**
 
@@ -496,7 +472,7 @@ git push origin v1.0.0
 **Rollback Process:**
 
 1. Go to Render dashboard
-2. Click "Rollback" on any previous deployment
+2. Click "Manual deploy" on any previous deployment
 
 ### 4. Monitoring & Alerting
 

@@ -1,4 +1,3 @@
-/// <reference types="vite/client" />
 import { clientConfig } from '../config/index.js';
 
 const getApiBaseUrl = () => clientConfig.api.baseUrl;

@@ -12,6 +12,7 @@ import { registerWorkers } from './workers/index.js';
 import { config } from './config/index.js';
 import postsRouter from './routes/posts.js';
 import subscribersRouter from './routes/subscribers.js';
+import healthRouter from './routes/health.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,28 +44,6 @@ app.use(
 // app.use(express.json({ limit: '10mb' }));
 // app.use(express.urlencoded({ extended: true }));
 
-app.get('/health', async (_req, res) => {
-  try {
-    // Test database connectivity
-    await prismaClient.$queryRaw`SELECT 1`;
-
-    res.json({
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      database: 'connected',
-    });
-  } catch (error) {
-    res.status(503).json({
-      status: 'error',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      database: 'disconnected',
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
-  }
-});
-
 // ---- Static client assets (served before SSR) ----
 const clientAssetsDir = path.resolve(__dirname, '../../client/build/client');
 const serverBundlePath = path.resolve(
@@ -91,6 +70,9 @@ app.use(
 app.get('/favicon.ico', (req, res) => {
   res.sendFile(path.join(clientAssetsDir, 'favicon', 'light', 'favicon.ico'));
 });
+
+// ---- Health check route (no body parser needed) ----
+app.use('/health', healthRouter);
 
 // ---- API routes (with body parsers scoped to /api) ----
 app.use('/api', express.json({ limit: '10mb' }));
@@ -119,7 +101,7 @@ app.use(
 
 // ---- React Router SSR handler LAST ----
 const requestHandler = createRequestHandler({
-  // Import the built server bundle at runtime; use file URL for absolute path safety in ESM
+  // Import the built server bundle at runtime; use file URL for absolute path safety
   build: () => import(pathToFileURL(serverBundlePath).href),
   mode: config.nodeEnv,
 });
@@ -165,6 +147,6 @@ startJobProcessor()
     });
   })
   .catch(e => {
-    console.error('pg-boss failed to start', e);
+    console.error('[pg-boss] failed to start', e);
     process.exit(1);
   });

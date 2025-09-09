@@ -1,5 +1,7 @@
-import PgBoss from 'pg-boss';
+import PgBoss, { QueueResult } from 'pg-boss';
 import { config } from '../../config/index.js';
+
+export type { QueueResult };
 
 export const Queues = {
   NEWSLETTER: {
@@ -10,14 +12,19 @@ export const Queues = {
 
 export const jobProcessor = new PgBoss({
   connectionString: config.databaseUrl,
-  // schema: 'pgboss', // by default
+  // schema: 'pgboss', // default
 });
 
 export async function startJobProcessor() {
   jobProcessor.on('error', err => console.error('[pg-boss] error', err));
-  await jobProcessor.start();
-  await jobProcessor.createQueue(Queues.NEWSLETTER.PUBLISH_POST);
-  await jobProcessor.createQueue(Queues.NEWSLETTER.SEND_EMAIL);
+  try {
+    await jobProcessor.start();
+    await jobProcessor.createQueue(Queues.NEWSLETTER.PUBLISH_POST);
+    await jobProcessor.createQueue(Queues.NEWSLETTER.SEND_EMAIL);
+  } catch (error) {
+    console.error('[pg-boss] Failed to start job processor:', error);
+    throw error;
+  }
 }
 
 export async function stopJobProcessor() {

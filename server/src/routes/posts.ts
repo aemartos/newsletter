@@ -70,7 +70,7 @@ router.get('/', async (req, res) => {
   // Generate next cursor (using the last post's timestamp)
   const nextCursor =
     hasMore && actualPosts.length > 0
-      ? actualPosts[actualPosts.length - 1][validSortField]?.toISOString()
+      ? actualPosts[actualPosts.length - 1][validSortField].toISOString()
       : null;
 
   return res.json({
@@ -123,9 +123,10 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const now = Date.now();
+    const now = new Date();
+
     const scheduleDate = schedule ? new Date(schedule) : null;
-    const isFuture = !!(scheduleDate && scheduleDate.getTime() > now);
+    const isFuture = scheduleDate ? scheduleDate > now : false;
 
     const post = await prismaClient.post.create({
       data: {
@@ -135,13 +136,13 @@ router.post('/', async (req, res) => {
         excerpt,
         content,
         status: isFuture ? PostStatus.DRAFT : PostStatus.PUBLISHED,
-        publishedAt: isFuture ? null : new Date(),
+        publishedAt: isFuture ? null : now,
         readTime,
         category,
       },
     });
 
-    if (isFuture) {
+    if (isFuture && scheduleDate) {
       await jobProcessor.sendAfter(
         Queues.NEWSLETTER.PUBLISH_POST,
         { slug: post.slug },

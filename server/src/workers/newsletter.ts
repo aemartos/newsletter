@@ -21,45 +21,46 @@ export async function registerNewsletterWorkers(): Promise<void> {
       const post = await prismaClient.post.findUnique({ where: { slug } });
       if (!post) return;
 
-      const subs = await prismaClient.$transaction(
-        async (tx: Prisma.TransactionClient) => {
-          if (post.status !== PostStatus.PUBLISHED) {
-            await tx.post.update({
-              where: { id: post.id },
-              data: { status: PostStatus.PUBLISHED, publishedAt: new Date() },
-            });
-          }
-
-          const list = await tx.subscriber.findMany({
-            where: { subscribed: true },
+      await prismaClient.$transaction(async (tx: Prisma.TransactionClient) => {
+        if (post.status !== PostStatus.PUBLISHED) {
+          await tx.post.update({
+            where: { id: post.id },
+            data: {
+              status: PostStatus.PUBLISHED,
+              publishedAt: new Date(),
+            },
           });
-          if (list.length) {
-            await tx.emailDelivery.createMany({
-              data: list.map((s: Subscriber) => ({
-                postId: post.id,
-                subscriberId: s.id,
-              })),
-              skipDuplicates: true,
-            });
-          }
-          return list;
         }
-      );
 
-      if (!subs.length) return;
+        const subs = await tx.subscriber.findMany({
+          where: { subscribed: true },
+        });
 
-      await jobProcessor.insert(
-        subs.map((s: Subscriber) => ({
-          name: Queues.NEWSLETTER.SEND_EMAIL,
-          data: { slug, subscriberId: s.id },
-          options: {
-            retryLimit: 10,
-            retryBackoff: true,
-            retryDelay: 10,
-            singletonKey: `send:${slug}:${s.id}`,
-          },
-        }))
-      );
+        if (subs.length) {
+          await tx.emailDelivery.createMany({
+            data: subs.map((s: Subscriber) => ({
+              postId: post.id,
+              subscriberId: s.id,
+            })),
+            skipDuplicates: true,
+          });
+        }
+
+        if (!subs.length) return;
+
+        await jobProcessor.insert(
+          subs.map((s: Subscriber) => ({
+            name: Queues.NEWSLETTER.SEND_EMAIL,
+            data: { slug, subscriberId: s.id },
+            options: {
+              retryLimit: 10,
+              retryBackoff: true,
+              retryDelay: 10,
+              singletonKey: `send:${slug}:${s.id}`,
+            },
+          }))
+        );
+      });
     }
   );
 
@@ -77,10 +78,17 @@ export async function registerNewsletterWorkers(): Promise<void> {
         where: { postId_subscriberId: { postId: post.id, subscriberId } },
         include: { post: true, subscriber: true },
       });
-      if (!delivery || delivery.status !== DeliveryStatus.PENDING) return;
+      if (
+        !delivery ||
+        ![DeliveryStatus.PENDING, DeliveryStatus.FAILED].includes(
+          delivery.status
+        )
+      )
+        return;
 
       try {
-        const msgId = await sendEmail({
+        // TODO(Ana): search for a provider with idempotency keys -> https://resend.com/migrate/sendgrid#idempotency-keys
+        await sendEmail({
           email: delivery.subscriber.email,
           templateId: config.email.templateId,
           dynamic_template_data: {
@@ -95,7 +103,6 @@ export async function registerNewsletterWorkers(): Promise<void> {
           data: {
             status: DeliveryStatus.SENT,
             sentAt: new Date(),
-            providerMsgId: msgId ?? null,
           },
         });
       } catch (err) {
