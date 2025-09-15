@@ -18,7 +18,7 @@ A full-stack newsletter application built with React Router SSR, TypeScript, Exp
 
 - **Express.js** REST API
 - **Prisma ORM** for database operations and migrations
-- **SendGrid** for email notifications
+- **Rensed** for email notifications (idempotency key)
 - **TypeScript** for type safety
 - **PostgreSQL** database with connection pooling
 - **PgBoss** job queue system for background processing
@@ -46,7 +46,7 @@ newsletter/
 ├── server/                    # Express.js API server
 │   ├── src/
 │   │   ├── config/            # Server configuration
-│   │   ├── providers/         # External service providers (SendGrid)
+│   │   ├── providers/         # External service providers
 │   │   ├── routes/            # API route handlers
 │   │   │   ├── posts.ts       # Post CRUD operations
 │   │   │   └── subscribers.ts # Subscriber management
@@ -223,14 +223,14 @@ The application uses **PgBoss** for reliable background job processing, leveragi
 
 2. **Email Sending** (`newsletter.send-email`)
    - Sends individual emails to subscribers
-   - Uses SendGrid for email delivery
+   - Uses Resend for email delivery with idempotency keys
    - Updates delivery status in database
    - Handles retry logic for failed deliveries
 
 #### Worker Configuration
 
 - **Publish Worker**: 1 worker, processes posts sequentially
-- **Email Workers**: 25 concurrent workers for high-throughput email sending
+- **Email Workers**: 2 concurrent workers (respects Resend's 2 req/sec rate limit)
 - **Retry Settings**: Up to 10 retries with exponential backoff
 - **Singleton Keys**: Prevents duplicate email sends per subscriber
 
@@ -263,7 +263,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Prisma](https://www.prisma.io/) for the database ORM
 - [Express.js](https://expressjs.com/) for the backend framework
 - [PgBoss](https://github.com/timgit/pg-boss) for reliable job queue processing
-- [SendGrid](https://sendgrid.com/) for email delivery services
+- [Resend](https://resend.com/) for email delivery services with idempotency keys
 
 ## 🤔 Rationale
 
@@ -288,12 +288,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **SQL Injection Protection**: Built-in query sanitization
 - **Migration Management**: Version-controlled database schema changes
 
-#### **SendGrid for Email**
+#### **Resend for Email**
 
 - **Reliability**: Enterprise-grade email delivery
 - **Analytics**: Built-in delivery tracking and analytics
 - **Scalability**: Handles high-volume email sending
 - **Compliance**: Built-in spam and compliance features
+- **Idempotency key**: to avoid sending the send email twice
 
 ### Trade-offs Made
 

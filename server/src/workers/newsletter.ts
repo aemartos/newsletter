@@ -6,7 +6,7 @@ import {
   PostStatus,
   DeliveryStatus,
 } from '../prisma.js';
-import { sendEmail } from '../providers/email.js';
+import { sendEmail } from '../providers/email/index.js';
 import { workBatch, startWorkersBatch } from './queue.js';
 import { config } from '../config/index.js';
 import { SEND_WORKERS } from './consts.js';
@@ -87,11 +87,15 @@ export async function registerNewsletterWorkers(): Promise<void> {
         return;
 
       try {
-        // TODO(Ana): search for a provider with idempotency keys -> https://resend.com/migrate/sendgrid#idempotency-keys
+        // Add delay to respect Resend's 2 req/sec rate limit
+        await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay = 2 req/sec max
+
+        // Using Resend with idempotency keys to prevent duplicate sends
         await sendEmail({
           email: delivery.subscriber.email,
-          templateId: config.email.templateId,
-          dynamic_template_data: {
+          idempotencyKey: delivery.id,
+          template: 'newsletter',
+          data: {
             post_url: `${config.clientUrl}/post/${slug}`,
             title: delivery.post.title,
             excerpt: delivery.post.excerpt,

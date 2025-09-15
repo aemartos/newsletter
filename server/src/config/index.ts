@@ -10,7 +10,6 @@ export interface Config {
   databaseUrl: string;
   email: {
     apiKey: string;
-    templateId: string;
     fromEmail: string;
   };
   api: {
@@ -31,7 +30,7 @@ export interface Config {
 }
 
 const validateRequiredEnvVars = (): void => {
-  const requiredVars = ['DATABASE_URL'];
+  const requiredVars = ['DATABASE_URL', 'EMAIL_API_KEY'];
   const missingVars = requiredVars.filter(envVar => !process.env[envVar]);
 
   if (missingVars.length > 0) {
@@ -42,6 +41,11 @@ const validateRequiredEnvVars = (): void => {
     console.error(
       'Please check your .env file and ensure all required variables are set.'
     );
+    if (missingVars.includes('EMAIL_API_KEY')) {
+      console.error(
+        'Get your Resend API key from: https://resend.com/api-keys'
+      );
+    }
     process.exit(1);
   }
 };
@@ -56,8 +60,7 @@ const createConfig = (): Config => {
     databaseUrl: process.env.DATABASE_URL || '',
     email: {
       apiKey: process.env.EMAIL_API_KEY || '',
-      templateId: process.env.EMAIL_TEMPLATE_ID || '',
-      fromEmail: process.env.EMAIL_FROM || 'noreply@blabla-newsletter.com',
+      fromEmail: process.env.EMAIL_FROM || 'onboarding@resend.dev',
     },
     api: {
       baseUrl: process.env.API_BASE_URL || 'http://localhost:3001/api',
