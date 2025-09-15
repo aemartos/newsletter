@@ -70,10 +70,9 @@ export default function PostView() {
           )}
         </div>
         {post.content && (
-          <div
-            className={styles['post-content']}
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
+          <div className={styles['post-content']}>
+            <div dangerouslySetInnerHTML={{ __html: post.content }} />
+          </div>
         )}
       </article>
     </div>

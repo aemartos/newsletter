@@ -1,13 +1,22 @@
-import { useEffect, useState } from 'react';
-import { Link, useActionData } from 'react-router';
+import { useEffect, useState, useCallback } from 'react';
+import { Link, useActionData, useSubmit } from 'react-router';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Header, Input, Button, Alert } from '../components';
-import { Routes, createSubscriber } from '../lib';
+import { Routes } from '../lib';
+import {
+  createSubscriberSchema,
+  validateData,
+  type CreateSubscriberInput,
+} from '../validation';
+import { createSubscriber } from '../lib';
 import styles from './styles.module.css';
 
 type ActionData = {
   success?: boolean;
   error?: string;
   message?: string;
+  validationErrors?: Array<{ field: string; message: string }>;
 };
 
 export const action = async ({
@@ -17,6 +26,16 @@ export const action = async ({
 }): Promise<ActionData> => {
   const formData = await request.formData();
   const email = formData.get('email') as string;
+
+  const validation = validateData(createSubscriberSchema, { email });
+
+  if (!validation.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      validationErrors: validation.errors,
+    };
+  }
 
   try {
     await createSubscriber(email);
@@ -37,23 +56,42 @@ export const action = async ({
 
 const Subscribe = () => {
   const actionData = useActionData<ActionData>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submit = useSubmit();
+
+  const [showAlert, setShowAlert] = useState(false);
+
+  const handleDismissAlert = useCallback(() => {
+    setShowAlert(false);
+  }, []);
 
   useEffect(() => {
     if (actionData) {
-      setIsSubmitting(false);
+      setShowAlert(true);
     }
   }, [actionData]);
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<CreateSubscriberInput>({
+    resolver: zodResolver(createSubscriberSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
+
   return (
     <>
-      {actionData && (
+      {showAlert && (
         <Alert
-          type={actionData.success ? 'success' : 'error'}
-          message={actionData.success ? actionData.message : actionData.error}
-          // autoDismiss={actionData.success}
+          type={actionData?.success ? 'success' : 'error'}
+          message={
+            actionData?.success ? actionData?.message : actionData?.error
+          }
           autoDismiss
           dismissAfter={3000}
+          onDismiss={handleDismissAlert}
         />
       )}
       <img
@@ -67,25 +105,32 @@ const Subscribe = () => {
       />
       <form
         method="post"
-        action=""
-        onSubmit={() => setIsSubmitting(true)}
+        onSubmit={handleSubmit((data: CreateSubscriberInput) =>
+          submit(data, { method: 'post' })
+        )}
         className={styles['form-subscribe']}
       >
-        <Input
-          type="email"
-          name="email"
-          placeholder="Email"
-          required
-          style={{
-            borderTopRightRadius: '0',
-            borderBottomRightRadius: '0',
-            borderRight: 'none',
-            borderWidth: '2px',
-          }}
-        />
+        <div className={styles['input-container']}>
+          <Input
+            type="email"
+            placeholder="Email"
+            {...register('email')}
+            style={{
+              borderTopRightRadius: '0',
+              borderBottomRightRadius: '0',
+              borderRight: 'none',
+              borderWidth: '2px',
+            }}
+            // required
+          />
+          {errors.email && (
+            <p className={styles['input-error']}>{errors.email.message}</p>
+          )}
+        </div>
         <Button
           type="submit"
-          text={isSubmitting ? 'Subscribing...' : 'Subscribe'}
+          text="Subscribe"
+          loading={isSubmitting}
           disabled={isSubmitting}
           style={{ borderTopLeftRadius: '0', borderBottomLeftRadius: '0' }}
         />

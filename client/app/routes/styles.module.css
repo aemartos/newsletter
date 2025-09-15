@@ -12,6 +12,18 @@
   padding: 0 var(--spacing-3);
 }
 
+.input-container {
+  position: relative;
+}
+
+.input-error {
+  position: absolute;
+  bottom: -1.6em;
+  left: 0.4em;
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+}
+
 /* HOME PAGE */
 .posts {
   padding: var(--spacing-8);
@@ -63,16 +75,16 @@
 }
 
 /* NEW POST PAGE */
-.post-form {
+.form-new-post {
   display: flex;
   flex-direction: column;
   margin: var(--spacing-6);
-  gap: var(--spacing-4);
+  gap: var(--spacing-8);
   flex-grow: 1;
-  .post-form-data {
+  .new-post-form-data {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-4);
+    gap: var(--spacing-6);
     justify-content: space-between;
     .title-row {
       display: flex;
@@ -135,6 +147,7 @@
     line-height: 1.7;
     font-size: 1.1rem;
     color: var(--color-text);
+    word-break: break-all;
     h1,
     h2,
     h3,

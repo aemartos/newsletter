@@ -123,17 +123,6 @@ router.post('/', validate(createPostSchema, 'body'), async (req, res) => {
     const scheduleDate = schedule ? new Date(schedule) : null;
     const isFuture = scheduleDate ? scheduleDate > now : false;
 
-    console.log('[Create Post] Scheduling details:', {
-      schedule,
-      scheduleDate,
-      now: now.toISOString(),
-      isFuture,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      serverTimezoneOffset: now.getTimezoneOffset(),
-      scheduleDateLocal: scheduleDate?.toString(),
-      nowLocal: now.toString(),
-    });
-
     const post = await prismaClient.post.create({
       data: {
         title,
@@ -149,11 +138,6 @@ router.post('/', validate(createPostSchema, 'body'), async (req, res) => {
     });
 
     if (isFuture && scheduleDate) {
-      console.log('[Create Post] Scheduling future post:', {
-        slug: post.slug,
-        scheduleDate: scheduleDate.toISOString(),
-      });
-
       await jobProcessor.sendAfter(
         Queues.NEWSLETTER.PUBLISH_POST,
         { slug: post.slug },
@@ -164,12 +148,6 @@ router.post('/', validate(createPostSchema, 'body'), async (req, res) => {
         scheduleDate
       );
     } else {
-      console.log('[Create Post] Publishing immediately:', {
-        slug: post.slug,
-        isFuture,
-        hasScheduleDate: !!schedule,
-      });
-
       await jobProcessor.send(
         Queues.NEWSLETTER.PUBLISH_POST,
         { slug: post.slug },

@@ -2,7 +2,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 100px;
   height: var(--input-base-height);
   font-size: var(--font-size-sm);
   background-color: var(--color-primary);

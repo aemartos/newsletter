@@ -40,6 +40,7 @@ export const createPostSchema = z.object({
 
   schedule: z
     .string()
+    .nullable()
     .optional()
     .refine(val => {
       if (!val) return true;

@@ -31,7 +31,7 @@ export const Button = ({
       <Link
         to={disabled ? undefined : to}
         className={`${styles.button} ${kind ? styles[kind] : ''} ${className} ${disabled ? styles.disabled : ''}`}
-        style={style}
+        style={{ ...style, ...(loading ? { minWidth: '100px' } : undefined) }}
         disabled={disabled}
       >
         {loading ? <Spinner size="small" /> : text}
@@ -43,7 +43,7 @@ export const Button = ({
       className={`${styles.button} ${className} ${disabled ? styles.disabled : ''}`}
       type={type}
       disabled={disabled}
-      style={style}
+      style={{ ...style, ...(loading ? { minWidth: '100px' } : undefined) }}
       onClick={disabled ? undefined : onClick}
     >
       {loading ? <Spinner size="small" /> : text}

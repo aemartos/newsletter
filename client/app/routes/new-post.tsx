@@ -1,8 +1,20 @@
-import { useEffect, useState, ChangeEvent } from 'react';
-import { ActionFunctionArgs, redirect, useActionData } from 'react-router';
+import { useState, ChangeEvent, useEffect } from 'react';
+import {
+  ActionFunctionArgs,
+  redirect,
+  useActionData,
+  useSubmit,
+} from 'react-router';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, Button, Header, Input, TextEditor } from '../components';
 import { Routes, createPost } from '../lib';
 import { generateSlug, getUTCDate } from '../utils';
+import {
+  createPostSchema,
+  validateData,
+  type CreatePostInput,
+} from '../validation';
 import styles from './styles.module.css';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -12,6 +24,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const schedule = formData.get('schedule') as string;
   const excerpt = formData.get('excerpt') as string;
   const content = formData.get('content') as string;
+
+  const validation = validateData(createPostSchema, {
+    title,
+    slug,
+    schedule: schedule || undefined,
+    excerpt,
+    content,
+  });
+
+  if (!validation.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      validationErrors: validation.errors,
+    };
+  }
 
   const scheduleUTC = getUTCDate(schedule);
 
@@ -41,41 +69,64 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 const NewPost = () => {
-  const [title, setTitle] = useState('');
-  const [slug, setSlug] = useState('');
-  const [content, setContent] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const actionData = useActionData() as
-    | { success?: boolean; error?: string }
+    | {
+        success?: boolean;
+        error?: string;
+        validationErrors?: Array<{ field: string; message: string }>;
+      }
     | undefined;
 
+  const submit = useSubmit();
+
+  const [showAlert, setShowAlert] = useState(false);
+
   useEffect(() => {
-    if (actionData) {
-      setIsSubmitting(false);
+    if (actionData?.error) {
+      setShowAlert(true);
     }
   }, [actionData]);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<CreatePostInput>({
+    resolver: zodResolver(createPostSchema),
+    defaultValues: {
+      title: '',
+      slug: '',
+      excerpt: '',
+      schedule: '',
+      content: '',
+    },
+  });
+
+  const title = watch('title');
+  const slug = watch('slug');
 
   const handleTitleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const newTitle = e.target.value;
-    setTitle(newTitle);
+    setValue('title', newTitle);
     // Only auto-generate slug if it's empty or matches the previous auto-generated slug
     if (!slug || slug === generateSlug(title)) {
-      setSlug(generateSlug(newTitle));
+      setValue('slug', generateSlug(newTitle));
     }
   };
 
   return (
     <div className={styles.container}>
-      {' '}
-      {actionData?.error && (
+      {showAlert && actionData?.error && (
         <Alert
           type={'error'}
           message={actionData.error}
           autoDismiss
           dismissAfter={5000}
+          onDismiss={() => setShowAlert(false)}
         />
       )}
       <Button
@@ -90,44 +141,87 @@ const NewPost = () => {
           paddingTop: 'var(--spacing-12)',
         }}
       />
-      <form method="post" action="" className={styles['post-form']}>
-        <div className={styles['post-form-data']}>
+      <form
+        method="post"
+        onSubmit={handleSubmit((data: CreatePostInput) =>
+          submit(data, { method: 'post' })
+        )}
+        className={styles['form-new-post']}
+      >
+        <div className={styles['new-post-form-data']}>
           <div className={styles['title-row']}>
-            <Input
-              label="Title"
-              type="text"
-              name="title"
-              placeholder="Title"
-              value={title}
-              onChange={handleTitleChange}
-              required
-            />
-            <Input
-              label="Slug"
-              type="text"
-              name="slug"
-              placeholder="post-slug"
-              value={slug}
-              onChange={e => setSlug(e.target.value)}
-              required
-            />
-            <Input
-              label="Schedule"
-              type="datetime-local"
-              name="schedule"
-              min={new Date().toISOString().split('T')[0]}
-            />
+            <div className={styles['input-container']}>
+              <Input
+                label="Title"
+                type="text"
+                placeholder="Title"
+                {...register('title')}
+                onChange={handleTitleChange}
+                // required
+              />
+              {errors.title && (
+                <span className={styles['input-error']}>
+                  {errors.title.message}
+                </span>
+              )}
+            </div>
+            <div className={styles['input-container']}>
+              <Input
+                label="Slug"
+                type="text"
+                placeholder="post-slug"
+                {...register('slug')}
+                // required
+              />
+              {errors.slug && (
+                <span className={styles['input-error']}>
+                  {errors.slug.message}
+                </span>
+              )}
+            </div>
+            <div className={styles['input-container']}>
+              <Input
+                label="Schedule"
+                type="datetime-local"
+                {...register('schedule')}
+                min={new Date().toISOString().split('T')[0]}
+              />
+              {errors.schedule && (
+                <span className={styles['input-error']}>
+                  {errors.schedule.message}
+                </span>
+              )}
+            </div>
           </div>
-          <Input
-            label="Excerpt"
-            type="text-area"
-            name="excerpt"
-            placeholder="Write a short excerpt for the post"
-            required
-          />
+          <div className={styles['input-container']}>
+            <Input
+              label="Excerpt"
+              type="text-area"
+              placeholder="Write a short excerpt for the post"
+              {...register('excerpt')}
+              // required
+            />
+            {errors.excerpt && (
+              <span className={styles['input-error']}>
+                {errors.excerpt.message}
+              </span>
+            )}
+          </div>
         </div>
-        <TextEditor content={content} onChange={setContent} />
-        <input type="hidden" name="content" value={content} required />
+        <div className={styles['input-container']}>
+          <TextEditor
+            content={watch('content')}
+            onChange={newContent => {
+              setValue('content', newContent);
+            }}
+          />
+          <input type="hidden" {...register('content')} />
+          {errors.content && (
+            <span className={styles['input-error']}>
+              {errors.content.message}
+            </span>
+          )}
+        </div>
         <Button
           type="submit"
           text="Publish"

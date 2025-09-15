@@ -14,6 +14,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.10.0",
     "@react-router/dev": "^7.8.2",
     "@react-router/node": "^7.8.2",
     "@react-router/serve": "^7.8.2",
@@ -26,8 +27,10 @@
     "isbot": "^5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.62.0",
     "react-router": "^7.8.2",
-    "vite": "^7.1.4"
+    "vite": "^7.1.4",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@react-router/dev": "^7.0.0",
