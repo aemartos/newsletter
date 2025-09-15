@@ -29,6 +29,10 @@ model Post {
 
     emailDelivery EmailDelivery[]
 
+    @@index([status])
+    @@index([publishedAt])
+    @@index([status, publishedAt])
+    @@index([category])
     @@map("posts")
 }
 
@@ -41,6 +45,7 @@ model Subscriber {
 
     emailDelivery EmailDelivery[]
 
+    @@index([subscribed])
     @@map("subscribers")
 }
 
@@ -65,5 +70,10 @@ model EmailDelivery {
     subscriber Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
 
     @@unique([postId, subscriberId])
+    @@index([postId, subscriberId])
+    @@index([status])
+    @@index([postId, status])
+    @@index([subscriberId, status])
+    @@index([sentAt])
     @@map("email_deliveries")
 }
