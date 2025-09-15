@@ -1,10 +1,17 @@
+import { CSSProperties } from 'react';
 import styles from './styles.module.css';
 
 interface SpinnerProps {
   size?: 'small' | 'medium' | 'large';
+  center?: boolean;
+  wrapperStyle?: CSSProperties;
 }
 
-export const Spinner = ({ size = 'large' }: SpinnerProps) => {
+export const Spinner = ({
+  size = 'medium',
+  center = false,
+  wrapperStyle = {},
+}: SpinnerProps) => {
   const sizeStyle = {
     small: {
       width: '20px',
@@ -15,8 +22,8 @@ export const Spinner = ({ size = 'large' }: SpinnerProps) => {
       height: '40px',
     },
     large: {
-      width: '100%',
-      height: '100%',
+      width: '80px',
+      height: '80px',
     },
   };
   const borderSize = {
@@ -26,18 +33,20 @@ export const Spinner = ({ size = 'large' }: SpinnerProps) => {
   };
 
   return (
-    <span
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        ...sizeStyle[size],
-      }}
-    >
+    <div className={styles.wrapper} style={wrapperStyle}>
       <span
-        className={styles.spinner}
-        style={{ borderWidth: borderSize[size] }}
-      />
-    </span>
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          ...(center ? { width: '100vw', height: '100vh' } : {}),
+        }}
+      >
+        <span
+          className={styles.spinner}
+          style={{ borderWidth: borderSize[size], ...sizeStyle[size] }}
+        />
+      </span>
+    </div>
   );
 };

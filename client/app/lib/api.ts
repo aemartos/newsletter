@@ -1,4 +1,5 @@
 import { clientConfig } from '../config/index.js';
+import { handleApiError, AppError } from './errors.js';
 
 const getApiBaseUrl = () => clientConfig.api.baseUrl;
 
@@ -54,85 +55,64 @@ export const fetchPosts = async (
     }
   });
 
-  try {
-    const response = await fetch(
-      `${getApiBaseUrl()}/posts?${searchParams.toString()}`
-    );
+  const response = await fetch(
+    `${getApiBaseUrl()}/posts?${searchParams.toString()}`
+  );
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch posts: ${response.statusText}`);
-    }
-
-    return response.json();
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch posts: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
+  if (!response.ok) {
+    await handleApiError(response);
   }
+
+  return response.json();
 };
 
 export const fetchPost = async (slug: string): Promise<Post> => {
-  try {
-    const response = await fetch(`${getApiBaseUrl()}/posts/${slug}`);
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Post not found');
-      }
-      throw new Error(`Failed to fetch post: ${response.statusText}`);
-    }
-    const result = await response.json();
-    if (!result.success) {
-      throw new Error(result.message || 'Failed to fetch post');
-    }
-    return result.data;
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch post: ${error instanceof Error ? error.message : 'Unknown error'}`
+  const response = await fetch(`${getApiBaseUrl()}/posts/${slug}`);
+
+  if (!response.ok) {
+    await handleApiError(response);
+  }
+
+  const result = await response.json();
+  if (!result.success) {
+    throw new AppError(
+      result.message || 'Failed to fetch post',
+      response.status,
+      'UNKNOWN_ERROR'
     );
   }
+
+  return result.data;
 };
 
 export const createPost = async (post: Partial<Post>): Promise<void> => {
-  try {
-    const response = await fetch(`${getApiBaseUrl()}/posts`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(post),
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to create post');
-    }
-    return response.json();
-  } catch (error) {
-    throw new Error(
-      `Failed to create post: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
+  const response = await fetch(`${getApiBaseUrl()}/posts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(post),
+  });
+
+  if (!response.ok) {
+    await handleApiError(response);
   }
+
+  return response.json();
 };
 
 export const createSubscriber = async (email: string): Promise<void> => {
-  try {
-    const response = await fetch(`${getApiBaseUrl()}/subscribers`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }),
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData.message ||
-          `Failed to create subscriber: ${response.statusText}`
-      );
-    }
-    return response.json();
-  } catch (error) {
-    throw new Error(
-      `Failed to create subscriber: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
+  const response = await fetch(`${getApiBaseUrl()}/subscribers`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    await handleApiError(response);
   }
+
+  return response.json();
 };

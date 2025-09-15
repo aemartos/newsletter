@@ -1,0 +1,1 @@
+export { useInfinitePosts } from './usePosts';

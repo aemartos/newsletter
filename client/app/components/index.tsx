@@ -1,4 +1,4 @@
-export { GenericError } from './GenericError';
+export { GenericError, ErrorBoundary } from './Errors';
 export { Header } from './Header';
 export { Layout } from './Layout';
 export { Input } from './Input';

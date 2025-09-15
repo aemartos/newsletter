@@ -6,15 +6,12 @@ import {
   Scripts,
   ScrollRestoration,
   useLocation,
-  isRouteErrorResponse,
-  type ErrorResponse,
 } from 'react-router';
 import type { LinksFunction } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import { GenericError, Layout } from './components';
+import { ErrorBoundary, Layout } from './components';
 import './root.css';
-import { Routes } from './lib';
 
 export const links: LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -122,23 +119,11 @@ export default function Root() {
 
   return (
     <ViewportLayout>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
-    </ViewportLayout>
-  );
-}
-
-export function ErrorBoundary({ error }: { error: ErrorResponse }) {
-  const errorTitle = isRouteErrorResponse(error)
-    ? `${error.status} ${error.statusText}`
-    : 'There was an error';
-
-  return (
-    <ViewportLayout>
-      <Layout showMenu={false} centered={true}>
-        <GenericError title={errorTitle} to={Routes.HOME} />
-      </Layout>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </ErrorBoundary>
     </ViewportLayout>
   );
 }

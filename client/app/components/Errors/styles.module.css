@@ -1,0 +1,80 @@
+.error-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-details {
+  padding: 1.5rem;
+  background-color: var(--color-background-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  text-align: left;
+  width: 600px;
+}
+
+.error-message {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.error-stack {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  max-height: 330px;
+  overflow-y: auto;
+}
+
+.error-stack summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+}
+
+.error-stack pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.error-actions {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .error-fallback {
+    padding: 1rem;
+    min-height: 300px;
+  }
+
+  .error-details {
+    padding: 1rem;
+  }
+
+  .error-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .error-actions button {
+    width: 100%;
+    max-width: 200px;
+  }
+}

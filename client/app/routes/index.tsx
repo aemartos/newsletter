@@ -111,7 +111,9 @@ const Index = () => {
             posts.map(post => <Card key={post.id} post={post} />)
           )}
         </div>
-        {(isFetchingNextPage || isLoading) && !error && <Spinner />}
+        {(isFetchingNextPage || isLoading) && !error && (
+          <Spinner wrapperStyle={{ height: '100px' }} />
+        )}
       </div>
     </div>
   );
