@@ -1,9 +1,10 @@
 import express from 'express';
 import { prismaClient } from '../prisma.js';
+import { validate, createSubscriberSchema } from '../validation/index.js';
 
 const router: express.Router = express.Router();
 
-router.post('/', async (req, res) => {
+router.post('/', validate(createSubscriberSchema, 'body'), async (req, res) => {
   try {
     const { email } = req.body;
 

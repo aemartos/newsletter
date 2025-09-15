@@ -2,116 +2,111 @@ import express from 'express';
 import { prismaClient, PostStatus } from '../prisma.js';
 import { Queues, jobProcessor } from '../lib/jobs/index.js';
 import { PUBLISH_RETRY } from '../workers/consts.js';
+import {
+  validate,
+  createPostSchema,
+  getPostsSchema,
+  getPostSchema,
+} from '../validation/index.js';
 
 const router: express.Router = express.Router();
 
-router.get('/', async (req, res) => {
-  const {
-    limit = '10',
-    status = PostStatus.PUBLISHED,
-    cursor = '',
-    sortBy = 'publishedAt',
-    sortOrder = 'desc',
-  } = req.query;
+router.get('/', validate(getPostsSchema, 'query'), async (req, res) => {
+  try {
+    const { limit, status, cursor, sortBy, sortOrder } = req.query;
 
-  const limitNum = Math.min(parseInt(limit as string, 10), 50); // Max 50 posts per page
-  const postStatus = status as string;
-  const sortField = sortBy as string;
-  const sortDirection = sortOrder as 'asc' | 'desc';
+    const where: Record<string, unknown> = {
+      status,
+    };
 
-  const validSortField = [
-    'publishedAt',
-    'createdAt',
-    'title',
-    'readTime',
-  ].includes(sortField)
-    ? sortField
-    : 'publishedAt';
-
-  const where: Record<string, unknown> = {
-    status: postStatus,
-  };
-
-  if (cursor) {
-    const cursorDate = new Date(cursor as string);
-    if (validSortField === 'publishedAt') {
-      where.publishedAt =
-        sortDirection === 'desc' ? { lt: cursorDate } : { gt: cursorDate };
-    } else if (validSortField === 'createdAt') {
-      where.createdAt =
-        sortDirection === 'desc' ? { lt: cursorDate } : { gt: cursorDate };
+    if (cursor) {
+      const cursorDate = new Date(cursor as string);
+      if (sortBy === 'publishedAt') {
+        where.publishedAt =
+          sortOrder === 'desc' ? { lt: cursorDate } : { gt: cursorDate };
+      } else if (sortBy === 'createdAt') {
+        where.createdAt =
+          sortOrder === 'desc' ? { lt: cursorDate } : { gt: cursorDate };
+      }
     }
-  }
 
-  const totalCount = await prismaClient.post.count({ where });
+    const totalCount = await prismaClient.post.count({ where });
 
-  const posts = await prismaClient.post.findMany({
-    where,
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      excerpt: true,
-      publishedAt: true,
-      readTime: true,
-      category: true,
-      createdAt: true,
-    },
-    orderBy: {
-      [validSortField]: sortDirection,
-    },
-    take: limitNum + 1, // Take one extra to check if there are more pages
-  });
+    const limitNum = limit as unknown as number;
 
-  // Check if there are more pages
-  const hasMore = posts.length > limitNum;
-  const actualPosts = hasMore ? posts.slice(0, limitNum) : posts;
-
-  // Generate next cursor (using the last post's timestamp)
-  const nextCursor =
-    hasMore && actualPosts.length > 0
-      ? actualPosts[actualPosts.length - 1][validSortField].toISOString()
-      : null;
-
-  return res.json({
-    success: true,
-    data: {
-      posts: actualPosts,
-      pagination: {
-        nextCursor,
-        totalCount,
+    const posts = await prismaClient.post.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        publishedAt: true,
+        readTime: true,
+        category: true,
+        createdAt: true,
       },
-    },
-  });
-});
+      orderBy: {
+        [sortBy as string]: sortOrder,
+      },
+      take: limitNum + 1, // Take one extra to check if there are more pages
+    });
 
-router.get('/:slug', async (req, res) => {
-  const { slug } = req.params;
-  const post = await prismaClient.post.findUnique({
-    where: { slug, status: PostStatus.PUBLISHED },
-  });
+    // Check if there are more pages
+    const hasMore = posts.length > limitNum;
+    const actualPosts = hasMore ? posts.slice(0, limitNum) : posts;
 
-  if (!post) {
-    return res.status(404).json({
+    // Generate next cursor (using the last post's timestamp)
+    const nextCursor =
+      hasMore && actualPosts.length > 0
+        ? actualPosts[actualPosts.length - 1][sortBy as string].toISOString()
+        : null;
+
+    return res.json({
+      success: true,
+      data: {
+        posts: actualPosts,
+        pagination: {
+          nextCursor,
+          totalCount,
+        },
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
       success: false,
-      message: 'Post not found',
+      message: 'Failed to fetch posts',
     });
   }
-
-  return res.json({ success: true, data: post });
 });
 
-router.post('/', async (req, res) => {
+router.get('/:slug', validate(getPostSchema, 'params'), async (req, res) => {
   try {
-    const {
-      title,
-      slug,
-      schedule,
-      excerpt,
-      content,
-      readTime = 2,
-      category = 'Architecture',
-    } = req.body;
+    const { slug } = req.params;
+    const post = await prismaClient.post.findUnique({
+      where: { slug, status: PostStatus.PUBLISHED },
+    });
+
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: 'Post not found',
+      });
+    }
+
+    return res.json({ success: true, data: post });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch post',
+    });
+  }
+});
+
+router.post('/', validate(createPostSchema, 'body'), async (req, res) => {
+  try {
+    const { title, slug, schedule, excerpt, content, readTime, category } =
+      req.body;
 
     const existingPost = await prismaClient.post.findUnique({
       where: { slug },
@@ -128,6 +123,17 @@ router.post('/', async (req, res) => {
     const scheduleDate = schedule ? new Date(schedule) : null;
     const isFuture = scheduleDate ? scheduleDate > now : false;
 
+    console.log('[Create Post] Scheduling details:', {
+      schedule,
+      scheduleDate,
+      now: now.toISOString(),
+      isFuture,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      serverTimezoneOffset: now.getTimezoneOffset(),
+      scheduleDateLocal: scheduleDate?.toString(),
+      nowLocal: now.toString(),
+    });
+
     const post = await prismaClient.post.create({
       data: {
         title,
@@ -143,6 +149,11 @@ router.post('/', async (req, res) => {
     });
 
     if (isFuture && scheduleDate) {
+      console.log('[Create Post] Scheduling future post:', {
+        slug: post.slug,
+        scheduleDate: scheduleDate.toISOString(),
+      });
+
       await jobProcessor.sendAfter(
         Queues.NEWSLETTER.PUBLISH_POST,
         { slug: post.slug },
@@ -153,6 +164,12 @@ router.post('/', async (req, res) => {
         scheduleDate
       );
     } else {
+      console.log('[Create Post] Publishing immediately:', {
+        slug: post.slug,
+        isFuture,
+        hasScheduleDate: !!schedule,
+      });
+
       await jobProcessor.send(
         Queues.NEWSLETTER.PUBLISH_POST,
         { slug: post.slug },
