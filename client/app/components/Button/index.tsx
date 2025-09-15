@@ -1,6 +1,7 @@
 import { CSSProperties } from 'react';
 import { Link } from 'react-router';
 import styles from './styles.module.css';
+import { Spinner } from '../Spinner';
 
 interface ButtonProps {
   type?: 'button' | 'submit' | 'reset';
@@ -8,6 +9,7 @@ interface ButtonProps {
   text: string;
   to?: string;
   disabled?: boolean;
+  loading?: boolean;
   style?: CSSProperties;
   className?: string;
   onClick?: () => void;
@@ -19,6 +21,7 @@ export const Button = ({
   text,
   to,
   disabled,
+  loading,
   style,
   className = '',
   onClick,
@@ -26,24 +29,24 @@ export const Button = ({
   if (to) {
     return (
       <Link
-        to={to}
-        className={`${styles.button} ${kind ? styles[kind] : ''} ${className}`}
+        to={disabled ? undefined : to}
+        className={`${styles.button} ${kind ? styles[kind] : ''} ${className} ${disabled ? styles.disabled : ''}`}
         style={style}
+        disabled={disabled}
       >
-        {text}
+        {loading ? <Spinner size="small" /> : text}
       </Link>
     );
   }
-
   return (
     <button
-      className={`${styles.button} ${className}`}
+      className={`${styles.button} ${className} ${disabled ? styles.disabled : ''}`}
       type={type}
       disabled={disabled}
       style={style}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
     >
-      {text}
+      {loading ? <Spinner size="small" /> : text}
     </button>
   );
 };
