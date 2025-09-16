@@ -165,6 +165,9 @@ importers:
       helmet:
         specifier: ^7.1.0
         version: 7.2.0
+      http-errors:
+        specifier: ^2.0.0
+        version: 2.0.0
       morgan:
         specifier: ^1.10.0
         version: 1.10.1
@@ -190,6 +193,9 @@ importers:
         specifier: ^4.1.8
         version: 4.1.8
     devDependencies:
+      '@types/http-errors':
+        specifier: ^2.0.5
+        version: 2.0.5
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.14.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.57.1)(typescript@5.9.2)
@@ -1686,7 +1692,6 @@ packages:
 
   /@types/http-errors@2.0.5:
     resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
-    dev: false
 
   /@types/json-schema@7.0.15:
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
