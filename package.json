@@ -1,6 +1,6 @@
 {
   "name": "newsletter-app",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Full-stack newsletter app with React Router SSR",
   "private": true,
   "scripts": {
