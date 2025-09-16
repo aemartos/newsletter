@@ -138,6 +138,9 @@ importers:
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.23
+      '@types/http-errors':
+        specifier: ^1.8.0
+        version: 1.8.2
       '@types/morgan':
         specifier: ^1.9.9
         version: 1.9.10
@@ -193,9 +196,6 @@ importers:
         specifier: ^4.1.8
         version: 4.1.8
     devDependencies:
-      '@types/http-errors':
-        specifier: ^2.0.5
-        version: 2.0.5
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.14.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.57.1)(typescript@5.9.2)
@@ -1690,8 +1690,9 @@ packages:
       '@types/serve-static': 1.15.8
     dev: false
 
-  /@types/http-errors@2.0.5:
-    resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
+  /@types/http-errors@1.8.2:
+    resolution: {integrity: sha512-EqX+YQxINb+MeXaIqYDASb6U6FCHbWjkj4a1CKDBks3d/QiB2+PqBLyO72vLDgAO1wUI4O+9gweRcQK11bTL/w==}
+    dev: false
 
   /@types/json-schema@7.0.15:
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -1776,7 +1777,7 @@ packages:
   /@types/serve-static@1.15.8:
     resolution: {integrity: sha512-roei0UY3LhpOJvjbIP6ZZFngyLKl5dskOtDhxY5THRSpO+ZI+nzJ+m5yUMzGrp89YRa7lvknKkMYjqQFGwA7Sg==}
     dependencies:
-      '@types/http-errors': 2.0.5
+      '@types/http-errors': 1.8.2
       '@types/node': 20.19.13
       '@types/send': 0.17.5
     dev: false

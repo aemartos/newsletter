@@ -42,7 +42,9 @@ export const notFoundHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  const error = createHttpError.NotFound(`Route ${req.originalUrl} not found`);
+  const error = new createHttpError.NotFound(
+    `Route ${req.originalUrl} not found`
+  );
   next(error);
 };
 
@@ -53,7 +55,7 @@ export const validationErrorHandler = (
   next: NextFunction
 ) => {
   if (err instanceof Error && err.name === 'ZodError') {
-    const zodError = createHttpError.BadRequest('Validation failed');
+    const zodError = new createHttpError.BadRequest('Validation failed');
     zodError.details = err.message;
     return next(zodError);
   }

@@ -55,6 +55,23 @@ export interface ErrorResponse {
   details?: unknown;
 }
 
+interface CustomError {
+  name: string;
+  message: string;
+  statusCode: number;
+  cause?: unknown;
+}
+
+function isCustomError(error: unknown): error is CustomError {
+  return (
+    error instanceof ValidationError ||
+    error instanceof NotFoundError ||
+    error instanceof ConflictError ||
+    error instanceof DatabaseError ||
+    error instanceof EmailError
+  );
+}
+
 export function createErrorResponse(error: unknown): ErrorResponse {
   if (createHttpError.isHttpError(error)) {
     return {
@@ -66,13 +83,7 @@ export function createErrorResponse(error: unknown): ErrorResponse {
     };
   }
 
-  if (
-    error instanceof ValidationError ||
-    error instanceof NotFoundError ||
-    error instanceof ConflictError ||
-    error instanceof DatabaseError ||
-    error instanceof EmailError
-  ) {
+  if (isCustomError(error)) {
     return {
       success: false,
       error: error.name,
