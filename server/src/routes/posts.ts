@@ -8,11 +8,15 @@ import {
   getPostsSchema,
   getPostSchema,
 } from '../validation/index.js';
+import { asyncHandler } from '../lib/errors/middlewares.js';
+import { NotFoundError, ConflictError } from '../lib/errors/index.js';
 
 const router: express.Router = express.Router();
 
-router.get('/', validate(getPostsSchema, 'query'), async (req, res) => {
-  try {
+router.get(
+  '/',
+  validate(getPostsSchema, 'query'),
+  asyncHandler(async (req, res) => {
     const { limit, status, cursor, sortBy, sortOrder } = req.query;
 
     const where: Record<string, unknown> = {
@@ -62,7 +66,7 @@ router.get('/', validate(getPostsSchema, 'query'), async (req, res) => {
         ? actualPosts[actualPosts.length - 1][sortBy as string].toISOString()
         : null;
 
-    return res.json({
+    res.json({
       success: true,
       data: {
         posts: actualPosts,
@@ -72,39 +76,30 @@ router.get('/', validate(getPostsSchema, 'query'), async (req, res) => {
         },
       },
     });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch posts',
-    });
-  }
-});
+  })
+);
 
-router.get('/:slug', validate(getPostSchema, 'params'), async (req, res) => {
-  try {
+router.get(
+  '/:slug',
+  validate(getPostSchema, 'params'),
+  asyncHandler(async (req, res) => {
     const { slug } = req.params;
     const post = await prismaClient.post.findUnique({
       where: { slug, status: PostStatus.PUBLISHED },
     });
 
     if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: 'Post not found',
-      });
+      throw new NotFoundError('Post');
     }
 
-    return res.json({ success: true, data: post });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch post',
-    });
-  }
-});
+    res.json({ success: true, data: post });
+  })
+);
 
-router.post('/', validate(createPostSchema, 'body'), async (req, res) => {
-  try {
+router.post(
+  '/',
+  validate(createPostSchema, 'body'),
+  asyncHandler(async (req, res) => {
     const { title, slug, schedule, excerpt, content, readTime, category } =
       req.body;
 
@@ -112,10 +107,7 @@ router.post('/', validate(createPostSchema, 'body'), async (req, res) => {
       where: { slug },
     });
     if (existingPost) {
-      return res.status(400).json({
-        success: false,
-        message: 'Post with this slug already exists',
-      });
+      throw new ConflictError('Post with this slug already exists');
     }
 
     const now = new Date();
@@ -158,13 +150,8 @@ router.post('/', validate(createPostSchema, 'body'), async (req, res) => {
       );
     }
 
-    return res.json({ success: true, data: post });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: `Failed to create post: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    });
-  }
-});
+    res.json({ success: true, data: post });
+  })
+);
 
 export default router;

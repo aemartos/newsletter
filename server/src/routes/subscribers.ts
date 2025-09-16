@@ -1,11 +1,15 @@
 import express from 'express';
 import { prismaClient } from '../prisma.js';
 import { validate, createSubscriberSchema } from '../validation/index.js';
+import { asyncHandler } from '../lib/errors/middlewares.js';
+import { ConflictError } from '../lib/errors/index.js';
 
 const router: express.Router = express.Router();
 
-router.post('/', validate(createSubscriberSchema, 'body'), async (req, res) => {
-  try {
+router.post(
+  '/',
+  validate(createSubscriberSchema, 'body'),
+  asyncHandler(async (req, res) => {
     const { email } = req.body;
 
     const existingSubscriber = await prismaClient.subscriber.findUnique({
@@ -13,18 +17,16 @@ router.post('/', validate(createSubscriberSchema, 'body'), async (req, res) => {
     });
 
     if (existingSubscriber) {
-      return res.status(409).json({
-        success: false,
-        error: 'Email already subscribed',
-        message: 'This email is already subscribed to our newsletter',
-      });
+      throw new ConflictError(
+        'This email is already subscribed to our newsletter'
+      );
     }
 
     const subscriber = await prismaClient.subscriber.create({
       data: { email },
     });
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       data: {
         id: subscriber.id,
@@ -33,12 +35,7 @@ router.post('/', validate(createSubscriberSchema, 'body'), async (req, res) => {
       },
       message: 'Successfully subscribed to the newsletter!',
     });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: `Failed to create subscriber: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    });
-  }
-});
+  })
+);
 
 export default router;

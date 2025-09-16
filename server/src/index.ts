@@ -13,6 +13,11 @@ import { config } from './config/index.js';
 import postsRouter from './routes/posts.js';
 import subscribersRouter from './routes/subscribers.js';
 import healthRouter from './routes/health.js';
+import {
+  errorHandler,
+  notFoundHandler,
+  validationErrorHandler,
+} from './lib/errors/middlewares.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -81,23 +86,9 @@ app.use('/api', express.urlencoded({ extended: true }));
 app.use('/api/posts', postsRouter);
 app.use('/api/subscribers', subscribersRouter);
 
-// TODO: improve error handling middleware
-app.use(
-  (
-    err: Error,
-    _req: express.Request,
-    res: express.Response,
-    _next: express.NextFunction
-  ) => {
-    console.error('Error:', err);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      message:
-        config.nodeEnv === 'development' ? err.message : 'Something went wrong',
-    });
-  }
-);
+// Error handling middleware (MUST be after all routes)
+app.use(validationErrorHandler);
+app.use(errorHandler);
 
 // ---- React Router SSR handler LAST ----
 const requestHandler = createRequestHandler({
@@ -110,15 +101,14 @@ const requestHandler = createRequestHandler({
 app.all('*', (req, res, next) => {
   // Don't handle API routes
   if (req.path.startsWith('/api/')) {
-    return res.status(404).json({
-      success: false,
-      error: 'API endpoint not found',
-      message: 'The requested API endpoint was not found',
-    });
+    return next(); // Let notFoundHandler handle this
   }
 
   return requestHandler(req, res, next);
 });
+
+// 404 handler for unmatched routes
+app.use(notFoundHandler);
 
 // Handles Ctrl+C to stop the server
 process.on('SIGINT', async () => {
