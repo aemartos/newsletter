@@ -5,11 +5,13 @@ export interface GenerateNewsletterHTMLProps {
   title: string;
   excerpt: string;
   post_url: string;
+  email: string;
 }
 // Generate HTML for newsletter email
 export const generateNewsletterHTML = (
   data: GenerateNewsletterHTMLProps
 ): EmailTemplate => {
+  const encodedEmail = encodeURIComponent(data.email);
   return {
     subject: 'Bla bla newsletter - Fresh content 🥳!',
     html: `
@@ -132,7 +134,7 @@ export const generateNewsletterHTML = (
           <p class="closing">Happy reading! 🚀</p>
           
           <div class="footer">
-            <a href="${config.clientUrl}/subscribe" class="unsubscribe">Unsubscribe</a>
+            <a href="${config.clientUrl}/unsubscribe?email=${encodedEmail}" class="unsubscribe">Unsubscribe</a>
           </div>
         </div>
       </body>

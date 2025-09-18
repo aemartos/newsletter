@@ -1,9 +1,12 @@
 import { CSSProperties, useEffect, useState, useRef } from 'react';
 import styles from './styles.module.css';
 
-interface AlertProps {
-  type: 'success' | 'error' | 'warning' | 'info';
+export type AlertType = 'success' | 'error' | 'warning' | 'info';
+export interface iAlert {
+  type: AlertType;
   message?: string;
+}
+interface AlertProps extends iAlert {
   style?: CSSProperties;
   autoDismiss?: boolean;
   dismissAfter?: number; // milliseconds

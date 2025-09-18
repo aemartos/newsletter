@@ -45,7 +45,7 @@ export const createPostSchema = z.object({
     }, 'Schedule must be a valid future date'),
 });
 
-export const createSubscriberSchema = z.object({
+export const subscriberSchema = z.object({
   email: z
     .string()
     .min(1, 'Email is required')
@@ -56,4 +56,4 @@ export const createSubscriberSchema = z.object({
 });
 
 export type CreatePostInput = z.infer<typeof createPostSchema>;
-export type CreateSubscriberInput = z.infer<typeof createSubscriberSchema>;
+export type SubscriberInput = z.infer<typeof subscriberSchema>;

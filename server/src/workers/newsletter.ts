@@ -99,6 +99,7 @@ export async function registerNewsletterWorkers(): Promise<void> {
             post_url: `${config.clientUrl}/post/${slug}`,
             title: delivery.post.title,
             excerpt: delivery.post.excerpt,
+            email: delivery.subscriber.email,
           },
         });
 

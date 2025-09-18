@@ -6,5 +6,5 @@ export { Button } from './Button';
 export { Menu } from './Menu';
 export { Card } from './Card';
 export { Spinner } from './Spinner';
-export { Alert } from './Alert';
+export { Alert, type iAlert } from './Alert';
 export { TextEditor } from './TextEditor';

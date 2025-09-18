@@ -16,6 +16,9 @@ type Pages = {
   "/subscribe": {
     params: {};
   };
+  "/unsubscribe": {
+    params: {};
+  };
   "/post/new": {
     params: {};
   };
@@ -29,7 +32,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/subscribe" | "/post/new" | "/post/:slug";
+    page: "/" | "/subscribe" | "/unsubscribe" | "/post/new" | "/post/:slug";
   };
   "routes/index.tsx": {
     id: "routes/index";
@@ -38,6 +41,10 @@ type RouteFiles = {
   "routes/subscribe.tsx": {
     id: "routes/subscribe";
     page: "/subscribe";
+  };
+  "routes/unsubscribe.tsx": {
+    id: "routes/unsubscribe";
+    page: "/unsubscribe";
   };
   "routes/new-post.tsx": {
     id: "routes/new-post";

@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -64,10 +62,6 @@ export const createPostSchema = z.object({
     .default('Architecture'),
 });
 
-export const updatePostSchema = createPostSchema.partial().extend({
-  id: z.string().regex(uuidPattern, 'Invalid post ID'),
-});
-
 export const getPostSchema = z.object({
   slug: z
     .string()
@@ -107,7 +101,7 @@ export const getPostsSchema = z.object({
 });
 
 // Subscriber validation schemas
-export const createSubscriberSchema = z.object({
+export const subscriberSchema = z.object({
   email: z
     .string()
     .min(1, 'Email is required')
@@ -115,15 +109,6 @@ export const createSubscriberSchema = z.object({
     .max(255, 'Email must be less than 255 characters')
     .toLowerCase()
     .trim(),
-});
-
-export const updateSubscriberSchema = z.object({
-  id: z.string().regex(uuidPattern, 'Invalid subscriber ID'),
-  subscribed: z.boolean(),
-});
-
-export const getSubscriberSchema = z.object({
-  id: z.string().regex(uuidPattern, 'Invalid subscriber ID'),
 });
 
 // Common validation schemas
@@ -147,10 +132,7 @@ export const paginationSchema = z.object({
 
 // Type exports for TypeScript
 export type CreatePostInput = z.infer<typeof createPostSchema>;
-export type UpdatePostInput = z.infer<typeof updatePostSchema>;
 export type GetPostInput = z.infer<typeof getPostSchema>;
 export type GetPostsInput = z.infer<typeof getPostsSchema>;
-export type CreateSubscriberInput = z.infer<typeof createSubscriberSchema>;
-export type UpdateSubscriberInput = z.infer<typeof updateSubscriberSchema>;
-export type GetSubscriberInput = z.infer<typeof getSubscriberSchema>;
+export type SubscriberInput = z.infer<typeof subscriberSchema>;
 export type PaginationInput = z.infer<typeof paginationSchema>;

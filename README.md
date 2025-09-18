@@ -25,51 +25,52 @@ A full-stack newsletter application built with React Router SSR, TypeScript, Exp
 
 ```bash
 newsletter/
-├── client/                    # React Router SSR client
+├── client/                     # React Router SSR client
 │   ├── app/
-│   │   ├── components/        # Reusable UI components
-│   │   ├── config/            # App configuration
-│   │   ├── hooks/             # Custom React hooks
-│   │   ├── lib/               # Utilities and API client
-│   │   ├── routes/            # Route components
-│   │   │   ├── index.tsx      # Home page with infinite scroll
-│   │   │   ├── new-post.tsx   # Post creation form
-│   │   │   ├── post.$slug.tsx # Individual post view
-│   │   │   └── subscribe.tsx  # Newsletter subscription
-│   │   ├── utils/             # Helper functions
-│   │   ├── root.tsx           # Root layout component
-│   │   ├── root.css           # Global styles
-│   │   └── routes.ts          # Route configuration
-│   ├── public/                # Static assets (favicons, images)
-│   ├── react-router.config.ts # React Router configuration
+│   │   ├── components/         # Reusable UI components
+│   │   ├── config/             # App configuration
+│   │   ├── hooks/              # Custom React hooks
+│   │   ├── lib/                # Utilities and API client
+│   │   ├── routes/             # Route components
+│   │   │   ├── index.tsx       # Home page with infinite scroll
+│   │   │   ├── new-post.tsx    # Post creation form
+│   │   │   ├── post.$slug.tsx  # Individual post view
+│   │   │   └── subscribe.tsx   # Newsletter subscription
+│   │   │   └── unsubscribe.tsx # Newsletter subscription
+│   │   ├── utils/              # Helper functions
+│   │   ├── root.tsx            # Root layout component
+│   │   ├── root.css            # Global styles
+│   │   └── routes.ts           # Route configuration
+│   ├── public/                 # Static assets (favicons, images)
+│   ├── react-router.config.ts  # React Router configuration
 │   └── package.json
-├── server/                    # Express.js API server
+├── server/                     # Express.js API server
 │   ├── src/
-│   │   ├── config/            # Server configuration
-│   │   ├── providers/         # External service providers
-│   │   ├── routes/            # API route handlers
-│   │   │   ├── posts.ts       # Post CRUD operations
-│   │   │   └── subscribers.ts # Subscriber management
-│   │   ├── workers/           # Background job workers
-│   │   │   ├── newsletter.ts  # Newsletter publishing and email workers
-│   │   │   ├── queue.ts       # Queue management utilities
-│   │   │   ├── consts.ts      # Worker configuration constants
-│   │   │   └── index.ts       # Worker registration
+│   │   ├── config/             # Server configuration
+│   │   ├── providers/          # External service providers
+│   │   ├── routes/             # API route handlers
+│   │   │   ├── posts.ts        # Post CRUD operations
+│   │   │   └── subscribers.ts  # Subscriber management
+│   │   ├── workers/            # Background job workers
+│   │   │   ├── newsletter.ts   # Newsletter publishing and email workers
+│   │   │   ├── queue.ts        # Queue management utilities
+│   │   │   ├── consts.ts       # Worker configuration constants
+│   │   │   └── index.ts        # Worker registration
 │   │   ├── lib/
-│   │   │   └── jobs/          # PgBoss job queue setup
-│   │   ├── prisma.ts          # Prisma client setup
-│   │   └── index.ts           # Server entry point with SSR
+│   │   │   └── jobs/           # PgBoss job queue setup
+│   │   ├── prisma.ts           # Prisma client setup
+│   │   └── index.ts            # Server entry point with SSR
 │   ├── prisma/
-│   │   ├── schema.prisma      # Database schema
-│   │   ├── seed.ts            # Database seeding
-│   │   └── migrations/        # Database migrations
+│   │   ├── schema.prisma       # Database schema
+│   │   ├── seed.ts             # Database seeding
+│   │   └── migrations/         # Database migrations
 │   └── package.json
-├── Dockerfile                 # Multi-stage Docker build
-├── docker-compose.yml         # Docker Compose for local development
-├── ecosystem.config.js        # PM2 configuration for development
-├── render.yaml                # Render deployment configuration (for the preDeployCommand, but it's only in paid tiers)
-├── pnpm-workspace.yaml        # PNPM workspace configuration
-└── package.json               # Root package.json with workspace scripts
+├── Dockerfile                  # Multi-stage Docker build
+├── docker-compose.yml          # Docker Compose for local development
+├── ecosystem.config.js         # PM2 configuration for development
+├── render.yaml                 # Render deployment configuration (for the preDeployCommand, but it's only in paid tiers)
+├── pnpm-workspace.yaml         # PNPM workspace configuration
+└── package.json                # Root package.json with workspace scripts
 ```
 
 ## 📋 Prerequisites
@@ -195,6 +196,7 @@ The application uses the following main entities:
 ### Subscribers
 
 - `POST /api/subscribers` - Create a new subscriber (subscribe)
+- `POST /api/subscribers/unsubscribe` - Unsubscribe a subscriber (unsubscribe)
 
 ### Posts
 
@@ -383,7 +385,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 #### New Features
 
 - **Posts Management**: Prevent modification of scheduled posts
-- **Subscription Management**: Enhanced subscriber management interface
 - **Search Functionality**: Implement search bar for posts
 - **Post Creation Improvements**:
   - Image upload and management

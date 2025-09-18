@@ -116,3 +116,19 @@ export const createSubscriber = async (email: string): Promise<void> => {
 
   return response.json();
 };
+
+export const unsubscribe = async (email: string): Promise<void> => {
+  const response = await fetch(`${getApiBaseUrl()}/subscribers/unsubscribe`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    await handleApiError(response);
+  }
+
+  return response.json();
+};

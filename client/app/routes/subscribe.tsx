@@ -5,9 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Header, Input, Button, Alert } from '../components';
 import { Routes } from '../lib';
 import {
-  createSubscriberSchema,
+  subscriberSchema,
   validateData,
-  type CreateSubscriberInput,
+  type SubscriberInput,
 } from '../validation';
 import { createSubscriber } from '../lib';
 import styles from './styles.module.css';
@@ -27,7 +27,7 @@ export const action = async ({
   const formData = await request.formData();
   const email = formData.get('email') as string;
 
-  const validation = validateData(createSubscriberSchema, { email });
+  const validation = validateData(subscriberSchema, { email });
 
   if (!validation.success) {
     return {
@@ -64,22 +64,27 @@ const Subscribe = () => {
     setShowAlert(false);
   }, []);
 
-  useEffect(() => {
-    if (actionData) {
-      setShowAlert(true);
-    }
-  }, [actionData]);
-
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateSubscriberInput>({
-    resolver: zodResolver(createSubscriberSchema),
+  } = useForm<SubscriberInput>({
+    resolver: zodResolver(subscriberSchema),
     defaultValues: {
       email: '',
     },
   });
+
+  useEffect(() => {
+    if (actionData) {
+      setShowAlert(true);
+      // Clear the form if subscription was successful
+      if (actionData.success) {
+        reset();
+      }
+    }
+  }, [actionData, reset]);
 
   return (
     <>
@@ -96,8 +101,8 @@ const Subscribe = () => {
       )}
       <img
         className={styles['newsletter-image']}
-        src="/images/newsletter.jpg"
-        alt="newsletter"
+        src="/images/subscribe.jpg"
+        alt="subscribe to our newsletter"
       />
       <Header
         title="Do you wanna know more"
@@ -105,7 +110,7 @@ const Subscribe = () => {
       />
       <form
         method="post"
-        onSubmit={handleSubmit((data: CreateSubscriberInput) =>
+        onSubmit={handleSubmit((data: SubscriberInput) =>
           submit(data, { method: 'post' })
         )}
         className={styles['form-subscribe']}

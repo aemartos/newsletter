@@ -97,7 +97,7 @@ function App() {
   const menuRoutes = [''];
   const showMenu = menuRoutes.includes(location.pathname);
 
-  const centeredRoutes = ['/subscribe'];
+  const centeredRoutes = ['/subscribe', '/unsubscribe'];
   const centered = centeredRoutes.includes(location.pathname);
 
   return (
