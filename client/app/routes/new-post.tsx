@@ -7,17 +7,22 @@ import {
 } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { fromZonedTime } from 'date-fns-tz';
 import { Alert, Button, Header, Input, TextEditor } from '../components';
 import { Routes, createPost } from '../lib';
-import { generateSlug, getUTCDate } from '../utils';
+import { generateSlug } from '../utils';
 import {
   createPostSchema,
   validateData,
   type CreatePostInput,
 } from '../validation';
 import styles from './styles.module.css';
+import { getTimezoneCookie } from '../hooks';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+  const { userTz } = getTimezoneCookie(request);
+  console.log('-------------------------> userTz', { userTz });
+
   const formData = await request.formData();
   const title = formData.get('title') as string;
   const slug = formData.get('slug') as string;
@@ -41,13 +46,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     };
   }
 
-  const scheduleUTC = getUTCDate(schedule);
+  // const scheduleUTC = getUTCDate(schedule);
+  const scheduleUTC = fromZonedTime(schedule, userTz);
+  const scheduleUTCString = scheduleUTC.toISOString();
+  console.log('-------------------------> schedule', { schedule });
+  console.log('-------------------------> scheduleUTC', { scheduleUTC });
+  console.log('-------------------------> scheduleUTCString', {
+    scheduleUTCString,
+  });
 
   try {
     await createPost({
       title,
       slug,
-      schedule: scheduleUTC,
+      schedule: scheduleUTCString,
       excerpt,
       content,
     });
