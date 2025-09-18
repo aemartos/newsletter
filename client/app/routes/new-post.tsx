@@ -7,17 +7,21 @@ import {
 } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { fromZonedTime } from 'date-fns-tz';
 import { Alert, Button, Header, Input, TextEditor } from '../components';
 import { Routes, createPost } from '../lib';
-import { generateSlug, getUTCDate } from '../utils';
+import { generateSlug } from '../utils';
 import {
   createPostSchema,
   validateData,
   type CreatePostInput,
 } from '../validation';
 import styles from './styles.module.css';
+import { getTimezoneCookie } from '../hooks';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+  const { userTz } = getTimezoneCookie(request);
+
   const formData = await request.formData();
   const title = formData.get('title') as string;
   const slug = formData.get('slug') as string;
@@ -28,7 +32,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const validation = validateData(createPostSchema, {
     title,
     slug,
-    schedule: schedule || undefined,
+    schedule,
     excerpt,
     content,
   });
@@ -41,13 +45,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     };
   }
 
-  const scheduleUTC = getUTCDate(schedule);
+  const scheduleUTC = schedule ? fromZonedTime(schedule, userTz) : null;
 
   try {
     await createPost({
       title,
       slug,
-      schedule: scheduleUTC,
+      schedule: scheduleUTC?.toISOString(),
       excerpt,
       content,
     });

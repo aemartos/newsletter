@@ -71,11 +71,6 @@ app.use(
   })
 );
 
-// Handle root favicon.ico requests - serve light favicon as default
-app.get('/favicon.ico', (req, res) => {
-  res.sendFile(path.join(clientAssetsDir, 'favicon', 'light', 'favicon.ico'));
-});
-
 // ---- Health check route (no body parser needed) ----
 app.use('/health', healthRouter);
 

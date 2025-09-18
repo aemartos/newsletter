@@ -12,6 +12,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { ErrorBoundary, Layout } from './components';
 import './root.css';
+import { useSetTimezoneCookie } from './hooks';
 
 export const links: LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -89,6 +90,8 @@ const ViewportLayout = ({ children }: { children: ReactNode }) => {
 };
 
 function App() {
+  useSetTimezoneCookie();
+
   const location = useLocation();
 
   const menuRoutes = [''];
