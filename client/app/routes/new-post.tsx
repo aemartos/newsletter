@@ -46,7 +46,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     };
   }
 
-  // const scheduleUTC = getUTCDate(schedule);
   const scheduleUTC = fromZonedTime(schedule, userTz);
   const scheduleUTCString = scheduleUTC.toISOString();
   console.log('-------------------------> schedule', { schedule });
