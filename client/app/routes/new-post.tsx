@@ -21,7 +21,6 @@ import { getTimezoneCookie } from '../hooks';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { userTz } = getTimezoneCookie(request);
-  console.log('-------------------------> userTz', { userTz });
 
   const formData = await request.formData();
   const title = formData.get('title') as string;
@@ -33,7 +32,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const validation = validateData(createPostSchema, {
     title,
     slug,
-    schedule: schedule || undefined,
+    schedule,
     excerpt,
     content,
   });
@@ -46,19 +45,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     };
   }
 
-  const scheduleUTC = fromZonedTime(schedule, userTz);
-  const scheduleUTCString = scheduleUTC.toISOString();
-  console.log('-------------------------> schedule', { schedule });
-  console.log('-------------------------> scheduleUTC', { scheduleUTC });
-  console.log('-------------------------> scheduleUTCString', {
-    scheduleUTCString,
-  });
+  const scheduleUTC = schedule ? fromZonedTime(schedule, userTz) : null;
 
   try {
     await createPost({
       title,
       slug,
-      schedule: scheduleUTCString,
+      schedule: scheduleUTC?.toISOString(),
       excerpt,
       content,
     });

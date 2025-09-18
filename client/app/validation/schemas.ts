@@ -39,7 +39,7 @@ export const createPostSchema = z.object({
     .string()
     .optional()
     .refine(val => {
-      if (!val) return true;
+      if (!val || val.trim() === '') return true;
       const date = new Date(val);
       return !isNaN(date.getTime()) && date > new Date();
     }, 'Schedule must be a valid future date'),

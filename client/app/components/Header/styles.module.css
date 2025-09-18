@@ -3,6 +3,7 @@
   text-align: center;
   color: var(--color-primary-dark);
   font-family: var(--font-family-secondary);
+  word-break: break-word;
   h1 {
     margin-bottom: var(--spacing-2);
     font-size: var(--font-size-5xl);
