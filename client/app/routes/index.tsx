@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLoaderData } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { Header, Card, Button, Spinner } from '../components';
 import { useInfinitePosts } from '../hooks/usePosts';
 import { fetchPosts, GetPostsParams, PostStatus, PostsResponse } from '../lib';
@@ -32,6 +33,7 @@ export async function loader(): Promise<IndexLoaderData> {
 
 const Index = () => {
   const { initialPosts, error: loaderError } = useLoaderData<IndexLoaderData>();
+  const qc = useQueryClient();
 
   // Use infinite query for pagination, starting with server-fetched data
   const {
@@ -52,6 +54,12 @@ const Index = () => {
 
   const posts = data?.pages.flatMap(page => page.data.posts) ?? [];
   const error = loaderError || queryError;
+
+  useEffect(() => {
+    qc.invalidateQueries({
+      queryKey: ['posts', 'list'],
+    });
+  });
 
   useEffect(() => {
     const handleScroll = () => {
